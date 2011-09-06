@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="datahub" basedir="." default="war">
+  <property environment="env"/>
+  <fail message="Error: must set environment variable GAE_HOME" unless="env.GAE_HOME"/>
+  <property name="appengine.home" value="${env.GAE_HOME}"/>
+  <property name="appname" value="datahub"/>
+  <property name="classes" value="build/classes"/>
+  <property name="srcDir" value="${basedir}/java"/>
+  <import file="${appengine.home}/config/user/ant-macros.xml"/>
+
+  <target name="init">
+    <mkdir dir="build"/>
+    <mkdir dir="build/classes"/>
+    <mkdir dir="build/lib"/>
+    <copy toDir="build/lib" failonerror="true" flatten="true">
+      <fileset dir="lib">
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${appengine.home}/lib/shared">
+        <include name="**/*.jar"/>
+        <exclude name="**/jsp/**"/>
+      </fileset>
+      <fileset dir="${appengine.home}/lib/user">
+        <include name="**/*.jar"/>
+      </fileset>
+      <fileset dir="${appengine.home}/lib/testing">
+        <include name="**/*.jar"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="clean">
+    <delete dir="build"/>
+  </target>
+
+  <path id="classpath">
+    <fileset dir="build/lib">
+      <include name="*.jar"/>
+    </fileset>
+    <fileset dir="${appengine.home}/lib/user">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="classpath" depends="init">
+    <property name="cp" refid="classpath"/>
+    <echo message="export CLASSPATH=${cp}:${srcDir}"></echo>
+  </target>
+
+  <target name="compile" depends="init">
+    <javac debug="on" memoryMaximumSize="256m" memoryInitialSize="256m"
+           fork="true" destdir="${classes}" includeantruntime="false">
+      <!--<compilerarg value="-Xlint"/>-->
+      <classpath refid="classpath"/>
+      <src path="java"/>
+      <src path="test"/>
+    </javac>
+  </target>
+
+  <target name="test" depends="compile">
+    <junit fork="true" showoutput="true">
+      <classpath>
+        <path>
+          <path refid="classpath"/>
+          <pathelement location="${classes}"/>
+        </path>
+      </classpath>
+      <formatter type="brief" usefile="false"/>
+      <test name="AllTests"/>
+    </junit>
+  </target>
+
+  <target name="jar" depends="test">
+    <jar destfile="build/lib/${appname}.jar" basedir="build/classes">
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Implementation-Vendor" value="Google"/>
+        <attribute name="Implementation-Title" value="{$appname}"/>
+        <attribute name="Implementation-Version" value="0.1"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- Standalone target for now to create shared common.jar for other .org projects. -->
+  <target name="common-src" depends="compile">
+    <jar destfile="build/src/common-src.jar" basedir="${srcDir}" includes="common/*.java">
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Implementation-Vendor" value="Google"/>
+        <attribute name="Implementation-Title" value="{$appname}"/>
+        <attribute name="Implementation-Version" value="0.1"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- Standalone target for now to create shared common.jar for other .org projects. -->
+  <target name="common-jar" depends="common-src">
+    <jar destfile="build/lib/common.jar" basedir="build/classes" includes="common/**">
+      <manifest>
+        <attribute name="Built-By" value="${user.name}"/>
+        <attribute name="Implementation-Vendor" value="Google"/>
+        <attribute name="Implementation-Title" value="{$appname}"/>
+        <attribute name="Implementation-Version" value="0.1"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="war" depends="jar">
+    <mkdir dir="war/WEB-INF/appengine-generated"/>
+    <mkdir dir="war/WEB-INF/lib"/>
+    <copy toDir="war/WEB-INF/lib" failonerror="true">
+      <fileset dir="lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="build/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${appengine.home}/lib/user">
+	<include name="*.jar"/>
+      </fileset>
+    </copy>
+  </target>
+
+  <target name="server" depends="war">
+    <dev_appserver war="war"/>
+  </target>
+</project>

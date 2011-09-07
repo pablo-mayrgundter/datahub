@@ -30,6 +30,13 @@ import org.json.JSONException;
  */
 public class Hub extends HttpServlet {
 
+  public void doGet(HttpServletRequest req, HttpServletResponse rsp)
+    throws ServletException, IOException {
+    InputStream is = req.getInputStream();
+    System.out.println("avail: "+ is.available());
+    System.out.println("read: "+ is.read(new byte[10], 0, 10));
+  }
+
   public void doPost(HttpServletRequest req, HttpServletResponse rsp)
     throws ServletException, IOException {
     InputStream is = req.getInputStream();

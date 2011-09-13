@@ -123,7 +123,11 @@
     </copy>
   </target>
 
-  <target name="server" depends="war">
-    <dev_appserver war="war"/>
+  <target name="server">
+    <dev_appserver war="war">
+      <options>
+        <arg value="--disable_update_check"/>
+      </options>
+    </dev_appserver>
   </target>
 </project>

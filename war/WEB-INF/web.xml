@@ -10,6 +10,6 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>hub</servlet-name>
-    <url-pattern>/data/test</url-pattern>
+    <url-pattern>/data/*</url-pattern>
   </servlet-mapping>
 </web-app>

@@ -1,0 +1,22 @@
+<!doctype html>
+<html xmlns:ng="http://angularjs.org">
+  <head>
+    <script type="text/javascript" src="angular-0.9.19.js" ng:autobind></script>
+    <script type="text/javascript" src="index.js"></script>
+  </head>
+  <body>
+
+    <!-- Collection view of /data/test -->
+    <div ng:controller="ItemRsrc">
+      <form>
+        <ul>
+          <li ng:repeat="item in items">
+            {{item}}
+          </li>
+        </ul>
+        <a href="" ng:click="add()">add</a>
+      </form>
+    </div>
+
+  </body>
+</html

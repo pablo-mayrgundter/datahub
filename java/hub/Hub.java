@@ -95,7 +95,7 @@ public class Hub extends HttpServlet {
     datastore.put(entity);
     rsp.setStatus(rsp.SC_CREATED);
     Key k = entity.getKey();
-    rsp.setHeader("Location", "/" + k.getKind() + "/" + k.getId());
+    rsp.setHeader("Location", srvPath + "/" + k.getKind() + "/" + k.getId());
   }
 
   JSONArray entitiesToJSON(Iterable<Entity> entities) {

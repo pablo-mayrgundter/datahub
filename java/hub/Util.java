@@ -1,6 +1,7 @@
 package hub;
 
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Text;
 
 import org.json.JSONArray;
@@ -10,6 +11,7 @@ import org.json.JSONObject;
 import java.io.Reader;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,38 +28,49 @@ final class Util {
     char [] buf = new char[200];
     int len;
     while ((len = r.read(buf)) != -1) {
-      str.append(buf);
+      str.append(buf, 0, len);
     }
     return str.toString();
   }
 
   // Entity factories.
 
-  static Entity entityFromJsonReader(String type, Reader r) throws IOException {
-    return entityFromJsonStr(type, readFully(r));
+  static void entitiesFromJsonReader(Key parentKey, String kind, Reader r, List<Entity> entities) throws IOException {
+    entitiesFromJsonStr(parentKey, kind, readFully(r), entities);
   }
 
-  static Entity entityFromJsonStr(String type, String jsonStr) {
-    return entityFromJson(type, jsonStrToObj(jsonStr));
+  static void entitiesFromJsonStr(Key parentKey, String kind, String jsonStr, List<Entity> entities) {
+    entitiesFromJson(parentKey, kind, jsonStrToObj(jsonStr), entities);
   }
 
-  static Entity entityFromJson(String type, JSONObject json) {
-    Entity entity = new Entity(type);
+  static void entitiesFromJson(Key parentKey, String kind, JSONObject json, List<Entity> entities) {
+    Entity entity = new Entity(kind, parentKey);
     Iterator itr = json.keys();
     try {
       while (itr.hasNext()) {
         String key = (String) itr.next();
-        entity.setProperty(key, json.get(key));
+        Object val = json.get(key);
+        if (val instanceof JSONObject) {
+          System.err.println("Found nested JSON object (and will recursively parse it) at key:"
+                             + key + ", object is: " + val);
+          int childNdx = entities.size();
+          entitiesFromJson(parentKey, key, (JSONObject) val, entities);
+          Entity child = entities.get(childNdx);
+          entities.add(child);
+          val = child.getKey();
+        }
+        entity.setProperty(key, val);
       }
     } catch (JSONException e) {
       throw new IllegalArgumentException(e);
     }
-    return entity;
+    entities.add(entity);
   }
 
   // JSON factories.
 
   static JSONObject jsonStrToObj(String jsonStr) {
+    System.err.println("JSON STR: " + jsonStr);
     try {
       return new JSONObject(jsonStr);
     } catch (JSONException e) {
@@ -74,18 +87,6 @@ final class Util {
       json.put(field, val);
     } catch (JSONException e) {
       throw new IllegalArgumentException(e);
-    }
-    return json;
-  }
-
-  // Can't directly send array:
-  //   https://github.com/angular/angular.js/issues/334
-  static JSONArray stringsToJson(Iterable<String> strings) {
-    JSONArray json = new JSONArray();
-    for (String s : strings) {
-      JSONObject obj = new JSONObject();
-      jsonPut(obj, "str", s);
-      json.put(obj);
     }
     return json;
   }

@@ -1,12 +1,12 @@
 angular.service('Items', function($resource) {
-    return $resource('/data/test');
+    return $resource('/data/numbers');
   });
 
 function ItemRsrc(Items) {
   this.items = Items.query();
   this.add = function() {
     var obj = new Items();
-    obj['a'] = Math.random();
+    obj['a'] = 'foo';
     obj.$save();
     this.items.push(obj);
   }

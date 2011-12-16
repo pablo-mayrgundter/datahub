@@ -25,38 +25,42 @@ import javax.servlet.http.HttpServletResponse;
 @SuppressWarnings("serial")
 public class Hub extends HttpServlet {
 
-  DatastoreService datastore;
+  Store store;
 
   public void init() {
-    datastore = DatastoreServiceFactory.getDatastoreService();
+    store = new Store();
   }
 
   public void doGet(HttpServletRequest req, HttpServletResponse rsp)
     throws ServletException, IOException {
     String srvPath = req.getServletPath();
     String uriPath = req.getRequestURI();
-    String id = uriPath.substring(srvPath.length());
-    String [] parts = id.split("/");
+    String objPath = uriPath.substring(srvPath.length());
+    String [] parts = objPath.split("/");
     String jsonStr;
 
+    String dir = parts[1];
     if (parts.length == 2) {
-      Iterable<Entity> results = datastore.prepare(new Query(parts[1])).asIterable();
-      jsonStr = Util.entitiesToJson(results).toString();
-    } else if (parts.length != 3) {
-      rsp.setStatus(rsp.SC_BAD_REQUEST);
-      rsp.getWriter().println("bad id: "+ id);
-      return;
-    } else {
-      Entity entity;
+      jsonStr = store.list(dir);
+    } else if (parts.length == 3) {
+      long id = Long.parseLong(parts[2]);
       try {
-        entity = datastore.get(KeyFactory.createKey(parts[1], Long.parseLong(parts[2])));
-      } catch (EntityNotFoundException e) {
-        rsp.setStatus(rsp.SC_NOT_FOUND);
+        jsonStr = store.get(dir, id);
+      } catch (IllegalArgumentException e) {
+        rsp.setStatus(rsp.SC_BAD_REQUEST);
+        rsp.getWriter().println(e);
         return;
       }
-      jsonStr = Util.entityToJson(entity).toString();
+    } else {
+      rsp.setStatus(rsp.SC_BAD_REQUEST);
+      rsp.getWriter().println("bad object path: "+ objPath);
+      return;
     }
-    rsp.getWriter().write(jsonStr);
+    if (jsonStr == null) {
+      rsp.setStatus(rsp.SC_NOT_FOUND);
+    } else {
+      rsp.getWriter().write(jsonStr);
+    }
   }
 
   public void doPost(HttpServletRequest req, HttpServletResponse rsp)
@@ -66,15 +70,19 @@ public class Hub extends HttpServlet {
     String idPath = uriPath.substring(srvPath.length());
     String [] parts = idPath.split("/");
     if (parts.length != 2) {
-      System.err.println("bad path: "+ idPath);
+      // TODO(pablo): Is 404 correct here?
+      rsp.setStatus(rsp.SC_NOT_FOUND);
       return;
     }
 
-    String type = parts[1];
-    Entity entity = Util.entityFromJsonReader(type, req.getReader());
-    datastore.put(entity);
+    String kind = parts[1];
     rsp.setStatus(rsp.SC_CREATED);
-    Key k = entity.getKey();
-    rsp.setHeader("Location", srvPath + "/" + k.getKind() + "/" + k.getId());
+    String jsonStr = Util.readFully(req.getReader());
+    String newObjPath = srvPath + "/" + store.save(kind, jsonStr);
+    rsp.setHeader("Location", newObjPath);
   }
+
+  //public void doPut(HttpServletRequest req, HttpServletResponse rsp)
+  //  throws ServletException, IOException {
+  //}
 }

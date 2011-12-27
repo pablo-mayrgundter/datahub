@@ -35,16 +35,18 @@ final class Util {
 
   // Entity factories.
 
-  static void entitiesFromJsonReader(Key parentKey, String kind, Reader r, List<Entity> entities) throws IOException {
-    entitiesFromJsonStr(parentKey, kind, readFully(r), entities);
+  static void entitiesFromJsonReader(Key parentKey, Resource rsrc, Reader r, List<Entity> entities) throws IOException {
+    entitiesFromJsonStr(parentKey, rsrc, readFully(r), entities);
   }
 
-  static void entitiesFromJsonStr(Key parentKey, String kind, String jsonStr, List<Entity> entities) {
-    entitiesFromJson(parentKey, kind, jsonStrToObj(jsonStr), entities);
+  static void entitiesFromJsonStr(Key parentKey, Resource rsrc, String jsonStr, List<Entity> entities) {
+    entitiesFromJson(parentKey, rsrc, jsonStrToObj(jsonStr), entities);
   }
 
-  static void entitiesFromJson(Key parentKey, String kind, JSONObject json, List<Entity> entities) {
-    Entity entity = new Entity(kind, parentKey);
+  static void entitiesFromJson(Key parentKey, Resource rsrc, JSONObject json, List<Entity> entities) {
+    Entity entity = rsrc.hasId() ?
+      new Entity(rsrc.getDir(), rsrc.getId(), parentKey)
+      : new Entity(rsrc.getDir(), parentKey);
     Iterator itr = json.keys();
     try {
       while (itr.hasNext()) {
@@ -54,7 +56,7 @@ final class Util {
           System.err.println("Found nested JSON object (and will recursively parse it) at key:"
                              + key + ", object is: " + val);
           int childNdx = entities.size();
-          entitiesFromJson(parentKey, key, (JSONObject) val, entities);
+          entitiesFromJson(parentKey, new Resource(key), (JSONObject) val, entities);
           Entity child = entities.get(childNdx);
           entities.add(child);
           val = child.getKey();

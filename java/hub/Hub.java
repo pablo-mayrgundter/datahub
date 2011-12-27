@@ -34,27 +34,19 @@ public class Hub extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse rsp)
     throws ServletException, IOException {
     String srvPath = req.getServletPath();
-    String uriPath = req.getRequestURI();
-    String objPath = uriPath.substring(srvPath.length());
-    String [] parts = objPath.split("/");
+    Resource rsrc = new Resource(req);
     String jsonStr;
 
-    String dir = parts[1];
-    if (parts.length == 2) {
-      jsonStr = store.list(dir);
-    } else if (parts.length == 3) {
-      long id = Long.parseLong(parts[2]);
+    if (!rsrc.hasId()) {
+      jsonStr = store.list(rsrc);
+    } else {
       try {
-        jsonStr = store.get(dir, id);
+        jsonStr = store.get(rsrc);
       } catch (IllegalArgumentException e) {
         rsp.setStatus(rsp.SC_BAD_REQUEST);
         rsp.getWriter().println(e);
         return;
       }
-    } else {
-      rsp.setStatus(rsp.SC_BAD_REQUEST);
-      rsp.getWriter().println("bad object path: "+ objPath);
-      return;
     }
     if (jsonStr == null) {
       rsp.setStatus(rsp.SC_NOT_FOUND);
@@ -66,23 +58,28 @@ public class Hub extends HttpServlet {
   public void doPost(HttpServletRequest req, HttpServletResponse rsp)
     throws ServletException, IOException {
     String srvPath = req.getServletPath();
-    String uriPath = req.getRequestURI();
-    String idPath = uriPath.substring(srvPath.length());
-    String [] parts = idPath.split("/");
-    if (parts.length != 2) {
-      // TODO(pablo): Is 404 correct here?
+    Resource rsrc = new Resource(req);
+    if (rsrc.hasId()) {
+      // TODO(pablo): Is 404 correct w.r.t. REST here?
       rsp.setStatus(rsp.SC_NOT_FOUND);
       return;
     }
 
-    String kind = parts[1];
     rsp.setStatus(rsp.SC_CREATED);
     String jsonStr = Util.readFully(req.getReader());
-    String newObjPath = srvPath + "/" + store.save(kind, jsonStr);
+    String newObjPath = srvPath + "/" + store.save(rsrc, jsonStr);
     rsp.setHeader("Location", newObjPath);
   }
 
-  //public void doPut(HttpServletRequest req, HttpServletResponse rsp)
-  //  throws ServletException, IOException {
-  //}
+  public void doPut(HttpServletRequest req, HttpServletResponse rsp)
+    throws ServletException, IOException {
+    Resource rsrc = new Resource(req);
+    if (!rsrc.hasId()) {
+      rsp.setStatus(rsp.SC_BAD_REQUEST);
+      return;
+    }
+
+    store.save(rsrc, Util.readFully(req.getReader()));
+    rsp.setStatus(rsp.SC_OK);
+  }
 }

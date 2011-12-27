@@ -21,12 +21,17 @@ class Store {
     rootKey = KeyFactory.createKey("data", "root"); // TODO(pablo): init via config.
   }
 
-  String get(String dir, long id) {
+  /**
+   * Retrieve the object with the given id from the given directory.
+   *
+   * @return A JSON formatted string of the requested entity.
+   */
+  String get(Resource rsrc) {
     Entity entity;
-    if (id == 0) {
-      throw new IllegalArgumentException("Id must be greater than zero: " + id);
+    if (rsrc.getId() == 0) {
+      throw new IllegalArgumentException("Id must be greater than zero: " + rsrc.getId());
     }
-    Key k = KeyFactory.createKey(rootKey, dir, id);
+    Key k = KeyFactory.createKey(rootKey, rsrc.getDir(), rsrc.getId());
     try {
       entity = datastore.get(k);
     } catch (EntityNotFoundException e) {
@@ -35,18 +40,27 @@ class Store {
     return Util.entityToJson(entity).toString();
   }
 
-  String list(String dir) {
-    Iterable<Entity> results = datastore.prepare(new Query(dir)).asIterable();
+  /**
+   * @return A JSON formatted list of entities in the given directory.
+   */
+  String list(Resource rsrc) {
+    Iterable<Entity> results = datastore.prepare(new Query(rsrc.getDir())).asIterable();
     if (!results.iterator().hasNext()) {
       return null;
     }
     return Util.entitiesToJson(results).toString();
   }
 
-  String save(String kind, String jsonStr) {
+  /**
+   * Stores the given json object as an entity of the given kind and
+   * returns the path to the object.
+   *
+   * @return The URL host path of the stored object.
+   */
+  String save(Resource rsrc, String jsonStr) {
     // TODO(pmy): txn
     List<Entity> entities = new ArrayList<Entity>();
-    Util.entitiesFromJsonStr(rootKey, kind, jsonStr, entities);
+    Util.entitiesFromJsonStr(rootKey, rsrc, jsonStr, entities);
     System.err.println("Entities created: " + entities);
     datastore.put(entities);
     Entity head = entities.get(0);

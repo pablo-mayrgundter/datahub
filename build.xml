@@ -1,11 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project name="datahub" basedir="." default="war">
+<project name="datahub" default="war">
   <property environment="env"/>
   <fail message="Error: must set environment variable GAE_HOME" unless="env.GAE_HOME"/>
-  <property name="appengine.home" value="${env.GAE_HOME}"/>
-  <property name="classes" value="build/classes"/>
-  <property name="srcDir" value="${basedir}/java"/>
-  <import file="${appengine.home}/config/user/ant-macros.xml"/>
+  <property name="appengine.sdk" value="${env.GAE_HOME}"/>
+<!-- Swap this in for relative path definition instead of environment variable. -->
+<!--
+  <property name="appengine.sdk" location="../.."/>
+-->
+  <property name="project.dir" location="."/>
+  <import file="${appengine.sdk}/config/user/ant-macros.xml" />
 
   <target name="init">
     <mkdir dir="build"/>
@@ -19,57 +21,47 @@
   </target>
 
   <target name="clean">
-    <delete dir="build"/>
-    <delete dir="war/WEB-INF/lib"/>
     <delete dir="war/WEB-INF/appengine-generated"/>
+    <delete dir="war/WEB-INF/classes"/>
+    <delete dir="war/WEB-INF/lib"/>
+    <delete dir="build"/>
+    <delete verbose="true">
+      <fileset dir="java" includes="**/*.class" />
+      <fileset dir="test" includes="**/*.class" />
+      <fileset dir="." defaultexcludes="no" includes="**/*~" />
+    </delete>
   </target>
 
   <path id="classpath">
     <fileset dir="build/lib">
-      <include name="*.jar"/>
-    </fileset>
-    <fileset dir="${appengine.home}/lib/shared">
-      <include name="**/*.jar"/>
-      <exclude name="**/jsp/**"/>
-    </fileset>
-    <fileset dir="${appengine.home}/lib/user">
       <include name="**/*.jar"/>
     </fileset>
-    <fileset dir="${appengine.home}/lib/testing">
-      <include name="**/*.jar"/>
+    <fileset dir="${appengine.sdk}/lib">
+      <include name="impl/*.jar"/>
+      <include name="shared/**/*.jar"/>
+      <include name="user/**/*.jar"/>
+      <include name="testing/appengine-testing.jar"/>
     </fileset>
   </path>
 
   <target name="classpath" depends="init">
     <property name="cp" refid="classpath"/>
-    <echo message="export CLASSPATH=${cp}:${srcDir}"></echo>
+    <echo message="export CLASSPATH=${cp}:${basedir}/java"/>
   </target>
 
   <target name="compile" depends="init">
-    <javac debug="on" memoryMaximumSize="256m" memoryInitialSize="256m"
-           fork="true" destdir="${classes}" includeantruntime="false">
+    <javac destdir="build/classes"
+           classpathref="classpath"
+           includeantruntime="false"
+           debug="on">
       <compilerarg value="-Xlint"/>
-      <classpath refid="classpath"/>
       <src path="java"/>
       <src path="test"/>
     </javac>
   </target>
 
-  <target name="test" depends="compile">
-    <junit fork="true" showoutput="true">
-      <classpath>
-        <path>
-          <path refid="classpath"/>
-          <pathelement location="${classes}"/>
-        </path>
-      </classpath>
-      <formatter type="brief" usefile="false"/>
-      <test name="AllTests"/>
-    </junit>
-  </target>
-
-  <target name="jar" depends="test">
-    <jar destfile="build/lib/${ant.project.name}.jar" basedir="build/classes">
+  <target name="jar" depends="compile">
+    <jar destfile="build/${ant.project.name}.jar" basedir="build/classes">
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Implementation-Vendor" value="Google"/>
@@ -79,23 +71,73 @@
     </jar>
   </target>
 
-  <target name="war" depends="jar">
+  <target name="test" depends="jar">
+    <junit fork="true" showoutput="true" haltonfailure="true">
+      <classpath>
+        <path refid="classpath"/>
+        <fileset dir="build">
+          <include name="${ant.project.name}.jar"/>
+        </fileset>
+        <pathelement path="test"/>
+      </classpath>
+      <formatter type="brief" usefile="false"/>
+      <test name="AllTests"/>
+    </junit>
+  </target>
+
+  <target name="war" depends="test">
+    <mkdir dir="war/WEB-INF/appengine-generated"/>
     <mkdir dir="war/WEB-INF/lib"/>
     <copy toDir="war/WEB-INF/lib" failonerror="true">
       <fileset dir="build/lib">
         <include name="*.jar"/>
       </fileset>
-      <fileset dir="${appengine.home}/lib/user">
-	<include name="*.jar"/>
+      <fileset dir="build">
+        <include name="${ant.project.name}.jar"/>
+      </fileset>
+      <fileset dir="${appengine.sdk}/lib/user">
+        <include name="*.jar"/>
       </fileset>
     </copy>
   </target>
 
-  <target name="server" depends="war">
-    <dev_appserver war="war">
+  <target name="server" depends="war"
+          description="Starts the development server.">
+    <dev_appserver war="war" address="0.0.0.0">
       <options>
         <arg value="--disable_update_check"/>
       </options>
     </dev_appserver>
+  </target>
+
+  <target name="update" depends="war"
+      description="Uploads the application to App Engine.">
+    <appcfg action="update" war="war">
+      <options>
+        <arg value="--enable_jar_splitting"/>
+      </options>
+    </appcfg>
+  </target>
+
+  <target name="update_indexes" depends="war"
+      description="Uploads just the datastore index configuration to App Engine.">
+    <appcfg action="update_indexes" war="war"/>
+  </target>
+
+  <target name="rollback" depends="war"
+      description="Rolls back an interrupted application update.">
+    <appcfg action="rollback" war="war"/>
+  </target>
+
+  <target name="request_logs"
+      description="Downloads log data from App Engine for the application.">
+    <appcfg action="request_logs" war="war">
+      <options>
+        <arg value="--num_days=5"/>
+      </options>
+      <args>
+        <arg value="logs.txt"/>
+      </args>
+    </appcfg>
   </target>
 </project>

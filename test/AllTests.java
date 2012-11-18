@@ -15,7 +15,7 @@ public class AllTests {
    */
   public static TestSuite suite() {
     final TestSuite suite = new TestSuite();
-    suite.addTest(new hub.AllTests().suite());
+    suite.addTest(new com.google.code.datahub.AllTests().suite());
     return suite;
   }
 

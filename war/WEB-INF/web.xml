@@ -5,11 +5,44 @@
 
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" version="2.5">
   <servlet>
-    <servlet-name>hub</servlet-name>
-    <servlet-class>hub.Hub</servlet-class>
+    <servlet-name>matches</servlet-name>
+    <servlet-class>com.google.code.datahub.MatchResponseServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
-    <servlet-name>hub</servlet-name>
-    <url-pattern>/data/*</url-pattern>
+    <servlet-name>matches</servlet-name>
+    <url-pattern>/_ah/prospective_search</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>tasks</servlet-name>
+    <servlet-class>com.google.code.datahub.Tasks</servlet-class>
+    <load-on-startup>2</load-on-startup>
+<!--    <init-param>
+      <param-name>queue</param-name>
+      <param-value>non-default task queue name</param-value>
+    </init-param
+-->
+    <init-param>
+      <param-name>path</param-name>
+      <param-value>/_ah/taskshelper</param-value>
+    </init-param>
+  </servlet>
+
+  <servlet>
+    <servlet-name>rsrc</servlet-name>
+    <servlet-class>com.google.code.datahub.Resource</servlet-class>
+    <load-on-startup>3</load-on-startup>
+    <!-- TODO(pmy): Old servlet API has no mechanism to find the
+    servlet-mapping, so set this path param to the same value as the
+    url-pattern mapping below. -->
+    <init-param>
+      <param-name>path</param-name>
+      <param-value>/</param-value>
+    </init-param>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>rsrc</servlet-name>
+    <url-pattern>/*</url-pattern>
   </servlet-mapping>
 </web-app>

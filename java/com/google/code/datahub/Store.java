@@ -84,6 +84,7 @@ public interface Store {
    * Stores a new entity with the given name and JSONObject properites
    * as a child of the given parent path.
    *
+   * @param name the name to give the new resource.
    * @return the path of the new entity, which is determined by the
    * given path and name.
    */

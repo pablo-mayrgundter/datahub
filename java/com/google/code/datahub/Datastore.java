@@ -40,7 +40,8 @@ import java.util.logging.Logger;
  */
 public class Datastore extends AbstractStore {
 
-  static final Logger aclLogger = Logger.getLogger(Datastore.class.getName() + "_ACLs");
+  protected static final Logger logger = Logger.getLogger(Resource.class.getName());
+  protected static final Logger aclLogger = Logger.getLogger(Datastore.class.getName() + "_ACLs");
 
   static final int DEFAULT_QUERY_LIMIT = 10;
 
@@ -51,20 +52,26 @@ public class Datastore extends AbstractStore {
 
   public Datastore() {
     service = DatastoreServiceFactory.getDatastoreService();
+    Entity root = new Entity(Path.PATH_KIND, Path.ROOT_NAME);
+    service.put(root);
   }
 
   @Override
   public Path create(Path parent, JSONObject json, User user) {
+    logger.fine("create, parent path: " + parent);
     check(parent, user, Op.CREATE);
     final Key parentKey = parent.toKey();
-    return create(new Entity(parentKey.getName(), parentKey), json, user);
+    logger.fine("create, parent key: " + parentKey);
+    return create(new Entity(Path.PATH_KIND, parentKey), json, user);
   }
 
   @Override
   public Path create(Path parent, String name, JSONObject json, User user) {
+    logger.fine("create, parent path: " + parent);
     check(parent, user, Op.CREATE);
     final Key parentKey = parent.toKey();
-    return create(new Entity(parentKey.getName(), name, parentKey), json, user);
+    logger.fine("create, parent key: " + parentKey);
+    return create(new Entity(Path.PATH_KIND, name, parentKey), json, user);
   }
 
   @Override
@@ -82,8 +89,10 @@ public class Datastore extends AbstractStore {
     check(path, user, Op.READ);
     // TODO(pmy): remove this try/catch when ACLs check is actually
     // performed, as it will throw for missing..
+    Key key = path.toKey();
+    logger.fine("service.get: " + key);
     try {
-      return entityToJson(service.get(path.toKey()));
+      return entityToJson(service.get(key));
     } catch (EntityNotFoundException e) {
       throw new NotFoundException(path);
     }
@@ -99,7 +108,12 @@ public class Datastore extends AbstractStore {
 
   @Override
   public void update(Path path, JSONObject json, User user) {
-    check(path, user, Op.UPDATE);
+    try {
+      check(path, user, Op.UPDATE);
+    } catch (NotFoundException e) {
+      // TODO(pmy): brittle
+      create(path.getParent(), path.path[path.path.length - 1], json, user);
+    }
     service.put(jsonToEntity(path, json));
   }
 
@@ -129,29 +143,30 @@ public class Datastore extends AbstractStore {
    */
   Path create(Entity entity, JSONObject json, User user) {
     // TODO(pmy): Util.jsonPut(json, PROP_ACL_KEY, new JSONObject());
-
-    return new Path(service.put(setProperties(entity, json)));
+    Key key = service.put(setProperties(entity, json));
+    logger.fine("create helper, inner key: " + key);
+    return new Path(key);
   }
 
   /**
    * @throws OperationRestrictedException If the given tuple is restricted.
    */
   final void check(Path path, User user, Op op) throws SecurityException {
-    aclLogger.fine(String.format("path(%s) operation(%s) check for user(%s)", path, op, user));
-    // TODO(pmy): enable ACLs.
-    if (true) {
-      return;
-    }
-    // TODO(pmy): cache key ACLs.
+    // TODO(pmy): cache key ACLs?
     Key key = path.toKey();
+    aclLogger.fine(String.format("path(%s) key(%s) operation(%s) check for user(%s)",
+                                 path, key, op, user));
     Entity entity;
     try {
       entity = service.get(key);
     } catch (EntityNotFoundException e) {
+      aclLogger.info("check: not found!");
       throw new NotFoundException(path);
     }
+    aclLogger.info("check: found!");
     String aclStr = (String) entity.getProperty(PROP_ACL_KEY);
     if (aclStr == null) {
+      aclLogger.info("Got to getProperty(ACL); the rest is unimplemented");
       return;
     }
     JSONObject acl;

@@ -18,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +48,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author pmy@google.com (Pablo Mayrgundter)
  */
 public class Resource extends AbstractServlet {
+
+  protected static final Logger logger = Logger.getLogger(Resource.class.getName());
 
   static final long serialVersionUID = 4216342727693173863L;
 
@@ -249,8 +252,10 @@ public class Resource extends AbstractServlet {
     if (reqQuery == null
         && !req.getRequestURI().endsWith("/")
         && req.getParameter("duration") == null) {
+      logger.fine("GET interpreted as store.retrieve");
       rspJson = store.retrieve(reqPath, reqUser);
     } else {
+      logger.fine("GET interpreted as store.search");
       rspJson = store.search(reqPath, reqQuery,
                              reqOffset, reqLimit,
                              null, null,

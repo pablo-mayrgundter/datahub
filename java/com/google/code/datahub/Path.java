@@ -36,6 +36,7 @@ public class Path {
   static final String SEP = "/";
   static final Pattern REGEX_SPECIAL = Pattern.compile("__(.+)__");
   static final Pattern REGEX_SERIAL = Pattern.compile("\\d+");
+  static final String PATH_KIND = "path";
   static final String ROOT_NAME = "ROOT";
 
   final String [] path;
@@ -65,6 +66,14 @@ public class Path {
     path = pathStr.equals("") ? new String[0] : pathStr.split(SEP);
   }
 
+  static String getRequestURIServletPathRemoved(HttpServletRequest req) {
+    String uri = req.getRequestURI();
+    String srvPath = req.getServletPath();
+    String relPath = uri.substring(srvPath.length());
+    System.err.printf(">>> uri(%s) srvPath(%s) relPath(%s)\n", uri, srvPath, relPath);
+    return relPath;
+  }
+
   /**
    * Construct a Path object for the given REST-ful request and
    * URI.  The given request URI must have the request servletPath as
@@ -72,7 +81,7 @@ public class Path {
    * characters are interpreted.
    */
   public Path(HttpServletRequest req) {
-    this(req.getRequestURI());
+    this(getRequestURIServletPathRemoved(req));
   }
 
   // TODO(pmy): handle incomplete keys.
@@ -197,10 +206,10 @@ public class Path {
     // Construct key by defining the first element and then
     // iteratively adding the rest of the path parts.  TODO(pmy):
     // ensure ROOT is escaped/unique; should this be == "ALL"?
+    Key key = KeyFactory.createKey(null, PATH_KIND, ROOT_NAME);
     if (path.length == 0) {
-      return KeyFactory.createKey(null, "resource", ROOT_NAME);
+      return key;
     }
-    Key key = null;
     for (int i = 0; i < path.length; i++) {
       String part = path[i];
       long id = 0;
@@ -208,12 +217,10 @@ public class Path {
       if (isPartSpecialSerial(part)) {
         id = Long.parseLong(getSpecial(part));
       }
-      // Use parent's part as kind.
-      String kind = key == null ? "resource" : key.getName();
       if (id == 0) {
-        key = KeyFactory.createKey(key, kind, part);
+        key = KeyFactory.createKey(key, Path.PATH_KIND, part);
       } else {
-        key = KeyFactory.createKey(key, kind, id);
+        key = KeyFactory.createKey(key, Path.PATH_KIND, id);
       }
     }
     return key;

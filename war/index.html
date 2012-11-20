@@ -1,20 +1,21 @@
 <!doctype html>
-<html xmlns:ng="http://angularjs.org">
+<html ng-app="demo">
   <head>
-    <script type="text/javascript" src="angular.js" ng:autobind></script>
+    <script type="text/javascript" src="angular-1.0.2.js"></script>
+    <script type="text/javascript" src="angular-resource-1.0.2.js"></script>
     <script type="text/javascript" src="index.js"></script>
   </head>
   <body>
 
     <!-- Collection view of /data/test -->
-    <div ng:controller="ItemRsrc">
+    <div ng-controller="DatasetCtrl">
       <form>
         <ul>
-          <li ng:repeat="item in items">
+          <li ng-repeat="item in dataset">
             {{item}}
           </li>
         </ul>
-        <a href="" ng:click="add()">add</a>
+        <!--<a href="" ng-click="add()">add</a>-->
       </form>
     </div>
 

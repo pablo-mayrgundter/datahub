@@ -43,6 +43,6 @@
   </servlet>
   <servlet-mapping>
     <servlet-name>rsrc</servlet-name>
-    <url-pattern>/*</url-pattern>
+    <url-pattern>/data/*</url-pattern>
   </servlet-mapping>
 </web-app>

@@ -247,21 +247,33 @@ public class Resource extends AbstractServlet {
       return;
     }
 
+    // http://en.wikipedia.org/wiki/Representational_state_transfer#RESTful_web_services
     JSONObject rspJson;
-    // Distinguish item vs. collection requests.
+    if (req.getRequestURI().endsWith("/")) {
+      // Colleciton request.
+      rspJson = store.list(reqPath, reqOffset, reqLimit,
+                           null, null, reqUser.id, reqDuration, reqUser);
+    } else {
+      // Item request or Search.
+      if (reqQuery == null) {
+        // Just retrieve the item.
+        rspJson = store.retrieve(reqPath, reqUser);
+      } else {
+        // Search its index.
+        rspJson = store.search(reqPath, reqQuery,
+                               reqOffset, reqLimit,
+                               null, null,
+                               reqUser.id,
+                               reqDuration,
+                               reqUser);
+      }
+    }
+
     if (reqQuery == null
-        && !req.getRequestURI().endsWith("/")
         && req.getParameter("duration") == null) {
       logger.fine("GET interpreted as store.retrieve");
-      rspJson = store.retrieve(reqPath, reqUser);
     } else {
       logger.fine("GET interpreted as store.search");
-      rspJson = store.search(reqPath, reqQuery,
-                             reqOffset, reqLimit,
-                             null, null,
-                             reqUser.id,
-                             reqDuration,
-                             reqUser);
     }
 
     httpOk(rspJson, rsp);

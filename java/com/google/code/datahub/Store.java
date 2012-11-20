@@ -108,19 +108,19 @@ public interface Store {
    */
   JSONObject getIndexMap(Path path, User user);
 
-  /** @return the object or null if not found. */
-  JSONObject retrieve(Path path, User user);
-
   /**
    * Retrieve the (possibly empty) collection of elements at the given
    * path prefix.
    *
    * @return A map of paths to collection elements.
    */
-  JSONObject retrieve(Path path,
-                      int offset, int limit, String [] fields, int [] order,
-                      String endpointId, long duration,
-                      User user);
+  JSONObject list(Path path,
+                  int offset, int limit, String [] fields, int [] order,
+                  String endpointId, long duration,
+                  User user);
+
+  /** @return the object or null if not found. */
+  JSONObject retrieve(Path path, User user);
 
   /**
    * Retrieve the persistent query with the given id.

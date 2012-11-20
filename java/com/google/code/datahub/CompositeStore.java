@@ -91,19 +91,17 @@ public class CompositeStore extends AbstractStore {
   }
 
   @Override
-  public JSONObject retrieve(Path path, User user) {
-    return datastore.retrieve(path, user);
+  public JSONObject list(Path path,
+                         int offset, int limit, String [] fields, int [] order,
+                         String endpointId, long duration,
+                         User user) {
+    return datastore.list(path, offset, limit, fields, order,
+                          endpointId, duration, user);
   }
 
   @Override
-  public JSONObject retrieve(Path path,
-                             int offset, int limit, String [] fields, int [] order,
-                             String endpointId, long duration,
-                             User user) {
-    datastoreAsAclService.check(path, user, Op.READ);
-    return search.search(path, Search.EMPTY_QUERY,
-                         offset, limit, fields, order, endpointId, duration,
-                         user);
+  public JSONObject retrieve(Path path, User user) {
+    return datastore.retrieve(path, user);
   }
 
   @Override

@@ -21,6 +21,7 @@ import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
+import static com.google.appengine.api.datastore.FetchOptions.Builder.*;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -85,6 +86,23 @@ public class Datastore extends AbstractStore {
   }
 
   @Override
+  public JSONObject list(Path path,
+                         int offset, int limit, String [] fields, int [] order,
+                         String reqEndpointId, long duration,
+                         User user) {
+    check(path, user, Op.READ);
+    Key ancestorKey = path.toKey();
+    logger.fine("service.list, ancestorKey: " + ancestorKey);
+    // TODO(pmy): limit this to 1-level deep children.
+    Query q = new Query(ancestorKey)
+      .addFilter(Entity.KEY_RESERVED_PROPERTY,
+                 Query.FilterOperator.GREATER_THAN,
+                 ancestorKey);
+    //.setKeysOnly();
+    return entitiesToJson(service.prepare(q).asList(withLimit(10)));
+  }
+
+  @Override
   public JSONObject retrieve(Path path, User user) {
     check(path, user, Op.READ);
     // TODO(pmy): remove this try/catch when ACLs check is actually
@@ -96,14 +114,6 @@ public class Datastore extends AbstractStore {
     } catch (EntityNotFoundException e) {
       throw new NotFoundException(path);
     }
-  }
-
-  @Override
-  public JSONObject retrieve(Path path,
-                             int offset, int limit, String [] fields, int [] order,
-                             String reqEndpointId, long duration,
-                             User user) {
-    throw new UnsupportedOperationException();
   }
 
   @Override

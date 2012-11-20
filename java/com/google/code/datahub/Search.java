@@ -305,18 +305,18 @@ public class Search extends AbstractStore {
   }
 
   @Override
+  public JSONObject list(Path path,
+                         int offset, int limit, String [] fields, int [] order,
+                         String endpointId, long duration, User user) {
+    return search(path, Search.EMPTY_QUERY, offset, limit, fields, order, endpointId, duration,
+                  user);
+  }
+
+  @Override
   public JSONObject retrieve(Path path, User user) {
     List<Document> listOfOneDoc = docIndex.listDocuments(
         ListRequest.newBuilder().setLimit(1).setStartId(path.toDocId()).build()).getResults();
     return listOfOneDoc.size() == 0 ? null : documentToJson(listOfOneDoc.get(0));
-  }
-
-  @Override
-  public JSONObject retrieve(Path path,
-                             int offset, int limit, String [] fields, int [] order,
-                             String endpointId, long duration, User user) {
-    return search(path, Search.EMPTY_QUERY, offset, limit, fields, order, endpointId, duration,
-                  user);
   }
 
   /** TODO(pmy): fields and order currently ignored. */

@@ -55,8 +55,9 @@ public class ResourceTest extends UtilTest {
   static final String BODY_KEY = "body";
   static final String BODY_VAL = "ecosystem οικοσύστημα पारिस्थितिकी तंत्र";
   String obj = "{" + BODY_KEY + ": '" + BODY_VAL + "'}";
-  final String [][] posts = {{"/test/", obj},
-                             {"/test/foo/", obj}};
+  final String SRVLT_PATH = "/data";
+  final String [][] posts = {{SRVLT_PATH + "/", obj},
+                             {SRVLT_PATH + "/__1__/", obj}};
   HttpServletRequest req;
   HttpServletResponse rsp;
   ServletConfig servletConfig;
@@ -70,7 +71,7 @@ public class ResourceTest extends UtilTest {
     req = mock(HttpServletRequest.class);
     rsp = mock(HttpServletResponse.class);
     r = new Resource();
-    when(servletConfig.getInitParameter("path")).thenReturn("/test");
+    when(servletConfig.getInitParameter("path")).thenReturn("/");
     try {
       r.init(servletConfig);
     } catch (ServletException e) {
@@ -92,11 +93,12 @@ public class ResourceTest extends UtilTest {
 
       when(req.getMethod()).thenReturn("POST");
       when(req.getRequestURI()).thenReturn(path);
+      when(req.getServletPath()).thenReturn(SRVLT_PATH);
       when(req.getReader()).thenReturn(new BufferedReader(new StringReader(body)));
-      final String newPath = path + "__" + id + "__";
 
       r.service(req, rsp);
 
+      final String newPath = path + "__" + id + "__";
       verify(rsp).setHeader(eq("Location"), eq(newPath));
       id++;
     }
@@ -118,6 +120,7 @@ public class ResourceTest extends UtilTest {
 
       when(req.getMethod()).thenReturn("GET");
       when(req.getRequestURI()).thenReturn(newPath);
+      when(req.getServletPath()).thenReturn(SRVLT_PATH);
       when(rsp.getWriter()).thenReturn(new PrintWriter(out = new StringWriter()));
 
       r.service(req, rsp);
@@ -145,6 +148,7 @@ public class ResourceTest extends UtilTest {
 
       when(req.getMethod()).thenReturn("PUT");
       when(req.getRequestURI()).thenReturn(newPath);
+      when(req.getServletPath()).thenReturn(SRVLT_PATH);
       when(req.getReader()).thenReturn(new BufferedReader(new StringReader(newObj)));
 
       r.service(req, rsp);
@@ -155,6 +159,7 @@ public class ResourceTest extends UtilTest {
 
       when(req.getMethod()).thenReturn("GET");
       when(req.getRequestURI()).thenReturn(newPath);
+      when(req.getServletPath()).thenReturn(SRVLT_PATH);
       when(rsp.getWriter()).thenReturn(new PrintWriter(out = new StringWriter()));
 
       r.service(req, rsp);
@@ -179,6 +184,7 @@ public class ResourceTest extends UtilTest {
 
       when(req.getMethod()).thenReturn("DELETE");
       when(req.getRequestURI()).thenReturn(newPath);
+      when(req.getServletPath()).thenReturn(SRVLT_PATH);
 
       r.service(req, rsp);
 
@@ -186,6 +192,7 @@ public class ResourceTest extends UtilTest {
 
       when(req.getMethod()).thenReturn("GET");
       when(req.getRequestURI()).thenReturn(newPath);
+      when(req.getServletPath()).thenReturn(SRVLT_PATH);
 
       r.service(req, rsp);
 

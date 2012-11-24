@@ -60,12 +60,15 @@ public class PathTest extends TestCase {
 
   public void testToKey() {
     for (String [] testCase : testPaths) {
-      Key key = new Path(testCase[0]).toKey();
-      String roundtripPath = new Path(key).toString();
+      String strPath = testCase[0];
+      Path path = new Path(strPath);
+      Key key = path.toKey();
+      Path pathFromKey = Path.fromKey(key);
+      String strFromPath = pathFromKey.toString();
       if (testCase.length == 3) {
-        assertEquals("roundtrip encoding (normalized)", testCase[2], roundtripPath);
+        assertEquals("roundtrip encoding (normalized)", testCase[2], strFromPath);
       } else {
-        assertEquals("roundtrip encoding (not normalized)", testCase[0], roundtripPath);
+        assertEquals("roundtrip encoding (not normalized)", testCase[0], strFromPath);
       }
     }
   }

@@ -53,7 +53,7 @@ public class Datastore extends AbstractStore {
 
   public Datastore() {
     service = DatastoreServiceFactory.getDatastoreService();
-    Entity root = new Entity(Path.PATH_KIND, Path.ROOT_NAME);
+    Entity root = new Entity(Path.ROOT_KEY);
     service.put(root);
   }
 
@@ -170,13 +170,13 @@ public class Datastore extends AbstractStore {
     try {
       entity = service.get(key);
     } catch (EntityNotFoundException e) {
-      aclLogger.info("check: not found!");
+      aclLogger.fine("check: not found!");
       throw new NotFoundException(path);
     }
-    aclLogger.info("check: found!");
+    aclLogger.fine("check: found!");
     String aclStr = (String) entity.getProperty(PROP_ACL_KEY);
     if (aclStr == null) {
-      aclLogger.info("Got to getProperty(ACL); the rest is unimplemented");
+      aclLogger.fine("Got to getProperty(ACL); the rest is unimplemented");
       return;
     }
     JSONObject acl;

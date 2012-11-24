@@ -41,7 +41,6 @@ public class Path {
   static final String SEP = "/";
   static final Pattern REGEX_SPECIAL = Pattern.compile("__(.+)__");
   static final Pattern REGEX_SERIAL = Pattern.compile("\\d+");
-  static final Pattern PART_PATTERN = Pattern.compile("(\\w+)(?:\\(\\w+\\))?");
 
   final Key [] path;
 
@@ -103,6 +102,7 @@ public class Path {
     return new Path(path.toArray(new Key[path.size()]));
   }
 
+  static final Pattern PART_PATTERN = Pattern.compile("(\\w+)(?:[(](\\w+)[)])?");
   static Key resolvePart(String part, Key parent) {
     Matcher m = PART_PATTERN.matcher(part);
     if (!m.find()) {
@@ -110,13 +110,11 @@ public class Path {
                                                        part, PART_PATTERN));
     }
     String kind = PATH_KIND, name;
-    if (m.groupCount() == 1) {
+    if (m.group(2) == null) {
       name = m.group(1);
-    } else if (m.groupCount() == 2) {
+    } else {
       kind = m.group(1);
       name = m.group(2);
-    } else {
-      throw new IllegalStateException("Path regex and code out of sync.");
     }
     long id = -1;
     if (name.startsWith("__") && name.endsWith("__")) {

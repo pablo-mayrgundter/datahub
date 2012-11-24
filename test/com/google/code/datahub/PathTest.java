@@ -15,6 +15,7 @@
 package com.google.code.datahub;
 
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 
@@ -56,6 +57,15 @@ public class PathTest extends TestCase {
   public void tearDown() throws Exception {
     helper.tearDown();
     super.tearDown();
+  }
+
+  public void testResolvePart() {
+    String kind = "kind";
+    String name = "name";
+    Key pathKey = KeyFactory.createKey(Path.ROOT_KEY, Path.PATH_KIND, name);
+    Key kindKey = KeyFactory.createKey(Path.ROOT_KEY, kind, name);
+    assertEquals(pathKey, Path.resolvePart(name, null));
+    assertEquals(kindKey, Path.resolvePart(String.format("%s(%s)", kind, name), null));
   }
 
   public void testToKey() {

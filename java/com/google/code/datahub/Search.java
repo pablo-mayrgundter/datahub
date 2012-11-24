@@ -498,9 +498,8 @@ public class Search extends AbstractStore {
     return toks.trim();
   }
 
-
   void debug(String format, Object ... args) {
-    logger.info(this + "." + String.format(format + "\n", args));
+    logger.fine(this + "." + String.format(format + "\n", args));
   }
 
   public String toString() {

@@ -269,13 +269,6 @@ public class Resource extends AbstractServlet {
       }
     }
 
-    if (reqQuery == null
-        && req.getParameter("duration") == null) {
-      logger.fine("GET interpreted as store.retrieve");
-    } else {
-      logger.fine("GET interpreted as store.search");
-    }
-
     httpOk(rspJson, rsp);
   }
 

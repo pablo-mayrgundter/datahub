@@ -88,8 +88,7 @@ class SchemaManager {
     if (key.getParent() != null) {
       key = key.getParent();
     }
-    String pathStr = Path.toStringPath(key);
-    Key schemaKey = KeyFactory.createKey("schema", pathStr);
+    Key schemaKey = KeyFactory.createKey("schema", Path.fromKey(key).toString());
     Entity schema;
     try {
       schema = datastore.get(schemaKey);

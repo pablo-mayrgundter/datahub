@@ -89,7 +89,7 @@ public class Resource extends AbstractServlet {
                                                     + " init param 'path'",
                                                     getServletConfig().getServletName()));
     }
-    store = new CompositeStore(new Path(path), parentPath != null ? new Path(parentPath) : null);
+    store = new CompositeStore(new Path(path), parentPath == null ? null : new Path(parentPath));
   }
 
   // HTTP method delegation: service, DELETE, GET, POST, PUT
@@ -301,7 +301,7 @@ public class Resource extends AbstractServlet {
     Util.jsonPut(reqJson, "updater", username);
 
     Path path = store.create(reqPath, reqJson, reqUser);
-    rsp.setHeader("Location", path.toString());
+    rsp.setHeader("Location", req.getServletPath() + path.toString());
   }
 
   /**

@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,17 +34,16 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class Path {
 
+  static final String PATH_KIND = "path";
+  static final String ROOT_NAME = "ROOT";
+  static final Key ROOT_KEY = KeyFactory.createKey(PATH_KIND, ROOT_NAME);
+
   static final String SEP = "/";
   static final Pattern REGEX_SPECIAL = Pattern.compile("__(.+)__");
   static final Pattern REGEX_SERIAL = Pattern.compile("\\d+");
-  static final String PATH_KIND = "path";
-  static final String ROOT_NAME = "ROOT";
+  static final Pattern PART_PATTERN = Pattern.compile("(\\w+)(?:\\(\\w+\\))?");
 
-  final String [] path;
-
-  Path(String [] path) {
-    this.path = path;
-  }
+  final Key [] path;
 
   /**
    * Splits the given {@code pathStr} on SEP and stores the parts
@@ -63,15 +63,7 @@ public class Path {
     if (pathStr.endsWith(SEP)) {
       pathStr = pathStr.substring(0, pathStr.length() - 1);
     }
-    path = pathStr.equals("") ? new String[0] : pathStr.split(SEP);
-  }
-
-  static String getRequestURIServletPathRemoved(HttpServletRequest req) {
-    String uri = req.getRequestURI();
-    String srvPath = req.getServletPath();
-    String relPath = uri.substring(srvPath.length());
-    System.err.printf(">>> uri(%s) srvPath(%s) relPath(%s)\n", uri, srvPath, relPath);
-    return relPath;
+    path = resolveParts(pathStr.equals("") ? new String[0] : pathStr.split(SEP));
   }
 
   /**
@@ -84,71 +76,96 @@ public class Path {
     this(getRequestURIServletPathRemoved(req));
   }
 
-  // TODO(pmy): handle incomplete keys.
+  Path(Key [] path) {
+    this.path = path;
+  }
+
   /**
-   * @throws IllegalArgumentException if !key.isComplete().
+   * Converts the given key's inheritance hierarchy to equivalent
+   * Keys.
+   *
+   * @throws IllegalArgumentException if the given key.isComplete() returns false.
    */
-  public Path(Key key) {
-    this(toStringPath(key));
+  static final Path fromKey(Key key) {
+    if (!key.isComplete()) {
+      throw new IllegalArgumentException("Key is incomplete, cannot create string representation.");
+    }
+    LinkedList<Key> path = new LinkedList<Key>();
+    do {
+      // Don't add root to path.
+      if (key.getParent() == null) {
+        break;
+      }
+
+      path.push(key);
+    } while ((key = key.getParent()) != null);
+
+    return new Path(path.toArray(new Key[path.size()]));
+  }
+
+  static Key resolvePart(String part, Key parent) {
+    Matcher m = PART_PATTERN.matcher(part);
+    if (!m.find()) {
+      throw new IllegalArgumentException(String.format("Path part(%s) must match: %s",
+                                                       part, PART_PATTERN));
+    }
+    String kind = PATH_KIND, name;
+    if (m.groupCount() == 1) {
+      name = m.group(1);
+    } else if (m.groupCount() == 2) {
+      kind = m.group(1);
+      name = m.group(2);
+    } else {
+      throw new IllegalStateException("Path regex and code out of sync.");
+    }
+    long id = -1;
+    if (name.startsWith("__") && name.endsWith("__")) {
+      try {
+        id = Long.parseLong(name.substring(2, name.length() - 2));
+      } catch (NumberFormatException e) {}
+    }
+    if (parent == null) {
+      parent = ROOT_KEY;
+    }
+    return id == -1 ? KeyFactory.createKey(parent, kind, name) : KeyFactory.createKey(parent, kind, id);
+  }
+
+  static Key[] resolveParts(String [] parts) {
+    Key [] keys = new Key[parts.length];
+    Key parent = ROOT_KEY;
+    for (int i = 0; i < parts.length; i++) {
+      keys[i] = resolvePart(parts[i], parent);
+      parent = keys[i];
+    }
+    return keys;
+  }
+
+  static String getRequestURIServletPathRemoved(HttpServletRequest req) {
+    String uri = req.getRequestURI();
+    String srvPath = req.getServletPath();
+    String relPath = uri.substring(srvPath.length());
+    return relPath;
+  }
+
+  public boolean isSpecial() {
+    if (isSpecialSerial()) {
+      return true;
+    }
+    // If not a serial id, then must have a name.
+    return REGEX_SPECIAL.matcher(toKey().getName()).matches();
+  }
+
+  public boolean isSpecialSerial() {
+    return toKey().getName() == null;
   }
 
   public Path getParent() {
     if (path.length == 0) {
       return null;
     }
-    String [] sub = new String[path.length - 1];
+    Key [] sub = new Key[path.length - 1];
     System.arraycopy(path, 0, sub, 0, sub.length);
     return new Path(sub);
-  }
-
-  /**
-   * Returns the last path part, or null if this is the root.
-   */
-  public String getFilename() {
-    if (path.length == 0) {
-      return null;
-    }
-    return path[path.length - 1];
-  }
-
-  /**
-   * True iff this.getFilename() is defined and starts with __.
-   */
-  public boolean isSpecial() {
-    return isSpecial(getFilename());
-  }
-
-  boolean isSpecial(String part) {
-    if (part != null && part.startsWith("__")) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * @throws IllegalStateException if the given path part has no
-   * matching special value.
-   */
-  String getSpecial(String part) {
-    Matcher m = REGEX_SPECIAL.matcher(part);
-    if (m.matches()) {
-      return m.group(1);
-    }
-    throw new IllegalStateException("Given path part has no special encoding: " + part);
-  }
-
-  /**
-   * Equivalent to isPartSerial(getFilename());
-   */
-  public boolean isSpecialSerial() {
-    return isPartSpecialSerial(getFilename());
-  }
-
-  boolean isPartSpecialSerial(String part) {
-    if (!isSpecial(part)) {
-      return false;
-    }
-    return REGEX_SERIAL.matcher(getSpecial(part)).matches();
   }
 
   public boolean isParentOf(Path other) {
@@ -163,67 +180,19 @@ public class Path {
   }
 
   /**
-   * Converts the given key's inheritance hierarchy to a
-   * slash-delimited representation.
-   *
-   * @throws IllegalArgumentException if the given key.isComplete() returns false.
-   */
-  static final String toStringPath(Key key) {
-    if (!key.isComplete()) {
-      throw new IllegalArgumentException("Key is incomplete, cannot create string representation.");
-    }
-    String path = "";
-
-    do {
-      String name = key.getName();
-      if (name == null) {
-        name = "__" + Long.toString(key.getId()) + "__";
-      }
-
-      if (name.equals(ROOT_NAME) && key.getParent() == null) {
-        if (path.length() == 0) {
-          path = SEP;
-        }
-        break;
-      }
-
-      if (!name.equals(SEP)) {
-        path = SEP + name + path;
-      }
-    } while ((key = key.getParent()) != null);
-
-    return path;
-  }
-
-  // TODO(pmy): does the kind/name scheme make sense?
-  /**
    * Converts this path to a Key by creating intermediate parent keys
    * for each path element, and linking them together to the last key,
    * which is returned.  Each key's kind is its parent's name.  The
    * root key's name is defined in {@link #ROOT_NAME}
    */
-  public Key toKey() {
+  Key toKey() {
     // Construct key by defining the first element and then
     // iteratively adding the rest of the path parts.  TODO(pmy):
     // ensure ROOT is escaped/unique; should this be == "ALL"?
-    Key key = KeyFactory.createKey(null, PATH_KIND, ROOT_NAME);
     if (path.length == 0) {
-      return key;
+      return ROOT_KEY;
     }
-    for (int i = 0; i < path.length; i++) {
-      String part = path[i];
-      long id = 0;
-
-      if (isPartSpecialSerial(part)) {
-        id = Long.parseLong(getSpecial(part));
-      }
-      if (id == 0) {
-        key = KeyFactory.createKey(key, Path.PATH_KIND, part);
-      } else {
-        key = KeyFactory.createKey(key, Path.PATH_KIND, id);
-      }
-    }
-    return key;
+    return path[path.length - 1];
   }
 
   /**
@@ -234,10 +203,18 @@ public class Path {
       return SEP;
     }
     String s = "";
-    for (String part : path) {
-      s += SEP + part;
+    for (Key key : path) {
+      if (key.getName() == null) {
+        s += SEP + "__" + key.getId() + "__";
+      } else {
+        s += SEP + key.getName();
+      }
     }
     return s;
+  }
+
+  public String getFilename() {
+    return toKey().getName();
   }
 
   public int hashCode() {

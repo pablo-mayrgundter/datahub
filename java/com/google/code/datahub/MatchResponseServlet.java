@@ -76,7 +76,7 @@ public class MatchResponseServlet extends AbstractServlet {
       return;
     }
     JSONObject matchedObject = Datastore.entityToJson(matchedEntity);
-    Path matchPath = new Path(matchedEntity.getKey());
+    Path matchPath = Path.fromKey(matchedEntity.getKey());
     Util.jsonPut(matchedObject, "path", matchPath);
 
     // Setup the lists of queries to notify.  Each client could have

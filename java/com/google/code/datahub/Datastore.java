@@ -72,7 +72,7 @@ public class Datastore extends AbstractStore {
     check(parent, user, Op.CREATE);
     final Key parentKey = parent.toKey();
     logger.fine("create, parent key: " + parentKey);
-    return create(new Entity(Path.PATH_KIND, name, parentKey), json, user);
+    return create(new Entity(Path.resolvePart(name, parentKey)), json, user);
   }
 
   @Override
@@ -91,13 +91,13 @@ public class Datastore extends AbstractStore {
                          String reqEndpointId, long duration,
                          User user) {
     check(path, user, Op.READ);
-    Key ancestorKey = path.toKey();
-    logger.fine("service.list, ancestorKey: " + ancestorKey);
+    Key key = path.toKey();
+    logger.fine("service.list, key: " + key);
     // TODO(pmy): limit this to 1-level deep children.
-    Query q = new Query(ancestorKey)
+    Query q = new Query(key)
       .addFilter(Entity.KEY_RESERVED_PROPERTY,
                  Query.FilterOperator.GREATER_THAN,
-                 ancestorKey);
+                 key);
     //.setKeysOnly();
     return entitiesToJson(service.prepare(q).asList(withLimit(10)));
   }
@@ -118,11 +118,11 @@ public class Datastore extends AbstractStore {
 
   @Override
   public void update(Path path, JSONObject json, User user) {
+    // Named create uses this path.
     try {
       check(path, user, Op.UPDATE);
     } catch (NotFoundException e) {
-      // TODO(pmy): brittle
-      create(path.getParent(), path.path[path.path.length - 1], json, user);
+      // TODO(pmy): OK?
     }
     service.put(jsonToEntity(path, json));
   }
@@ -155,7 +155,7 @@ public class Datastore extends AbstractStore {
     // TODO(pmy): Util.jsonPut(json, PROP_ACL_KEY, new JSONObject());
     Key key = service.put(setProperties(entity, json));
     logger.fine("create helper, inner key: " + key);
-    return new Path(key);
+    return Path.fromKey(key);
   }
 
   /**
@@ -274,7 +274,7 @@ public class Datastore extends AbstractStore {
   public static JSONObject entitiesToJson(Iterable<Entity> entities) {
     JSONObject json = new JSONObject();
     for (Entity e : entities) {
-      Util.jsonPut(json, new Path(e.getKey()).toString(), entityToJson(e));
+      Util.jsonPut(json, Path.fromKey(e.getKey()).toString(), entityToJson(e));
     }
     return json;
   }

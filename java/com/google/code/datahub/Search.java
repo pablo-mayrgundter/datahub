@@ -372,8 +372,9 @@ public class Search extends AbstractStore {
     JSONObject rspJson = new JSONObject();
     JSONArray resultsJson = new JSONArray();
     for (ScoredDocument doc : results) {
-      final JSONObject result = documentToJson(doc);
-      Util.jsonPut(result, "path", Path.fromDocId(doc.getId()).toString());
+      final JSONObject result = new JSONObject();
+      final JSONObject obj = documentToJson(doc);
+      Util.jsonPut(result, Path.fromDocId(doc.getId()).toString(), obj);
       resultsJson.put(result);
     }
     Util.jsonPut(rspJson, "results", resultsJson);

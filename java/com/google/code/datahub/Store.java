@@ -179,6 +179,10 @@ public interface Store {
    * postitive number, 0 for unlimited duration, or DURATION_UNDEFINED
    * to not create a persistent update subscription.  This value will
    * be limited by the server to MAX_DURATION.
+   * @return an object with 3 fields, results, offset, and limit.
+   * Offset and limit can be used to page through results.  results is
+   * an array of result objects.  Each result object has a single
+   * field with a path name mapping to an object.
    */
   JSONObject search(Path path, String query,
                     int offset, int limit, String [] fields, int [] order,

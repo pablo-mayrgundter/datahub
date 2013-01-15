@@ -230,14 +230,6 @@ public class Resource extends AbstractServlet {
       return;
     }
 
-    // Web browsers should interact with the Angular app defined in
-    // index.jsp.
-    String hdrAccept = req.getHeader("Accept");
-    if (hdrAccept != null && hdrAccept.indexOf("html") != -1) {
-      req.getRequestDispatcher("index.jsp").include(req, rsp);
-      return;
-    }
-
     final String reqQuery = req.getParameter("q");
     final int reqOffset = Math.abs(paramToInt("offset", 0));
     final int reqLimit = Math.abs(paramToInt("limit", 10));

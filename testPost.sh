@@ -1,2 +1,2 @@
-echo '{"num":"10"}' > num.json
-curl -D- --data @num.json http://localhost:8080/data/numbers
+curl -D- -X PUT -d '{"ten":10}' --verbose http://localhost:8080/data/numbers
+curl http://localhost:8080/data/numbers

@@ -3,6 +3,9 @@
 angular.module('demo', ['fileService']).
   config(['$routeProvider', function($routeProvider) {
         $routeProvider.
+          when('/', {templateUrl: 'welcome.html',
+                controller: FileCtrl}).
+
           when('/data/:path', {templateUrl: 'file.html',
                 controller: FileCtrl}).
 
@@ -22,14 +25,14 @@ angular.module('fileService', ['ngResource'])
 function FileCtrl($scope, $routeParams, File) {
   $scope.path = $routeParams.path;
 
-  $scope.dir = null;
+  $scope.dir = File.get({name: $scope.path});
 
   $scope.mkdir = function() {
+    console.log($scope.path);
     new File({}).$put({name: $scope.path});
   };
 
   $scope.list = function() {
-    console.log($routeParams);
     $scope.dir = File.get({name: $scope.path});
   };
 

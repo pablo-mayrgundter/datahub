@@ -1,0 +1,41 @@
+    <ol class="breadcrumb">
+      <li><a href="">data</a> <span class="divider">/</span></li>
+      <li class="active">
+        <input ng-model="path" class="span2" type="text" style="margin-top: 10px">
+        <button ng-click="list()" class="btn btn-primary">List</button>
+        <button ng-click="mkdir()" class="btn">Create</button>
+      </li>
+    </ol>
+    <hr>
+    <div>
+      <form>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Path</th>
+              <th>Contents</th>
+              <th>Actions</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="(key,val) in dir">
+              <td><a href="#/data{{key}}">/data{{key}}</a></td>
+              <td>
+                <ul>
+                  <li ng-repeat="(key,val) in val">{{key}}:{{val}}</li>
+                </ul>
+              </td>
+              <td>
+                <button ng-click="delete(key)" class="btn"><i class="icon-trash"></i> Delete</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </form>
+    </div>
+    <hr>
+    <div class="input-prepend">
+      <span class="add-on">Name (optional):</span>
+      <input ng-model="name" class="span2" type="text">
+    </div>
+    <textarea id="object" rows="5" cols="20">{"c":"d"}</textarea><br/>
+    <button ng-click="save()" class="btn">Save</button>

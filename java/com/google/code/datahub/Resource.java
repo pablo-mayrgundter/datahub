@@ -277,14 +277,6 @@ public class Resource extends AbstractServlet {
       return;
     }
 
-    // TODO(pmy): RFC 8?? format.
-    String nowTime = new java.util.Date().getTime() + "";
-    Util.jsonPut(reqJson, "created", nowTime);
-    Util.jsonPut(reqJson, "updated", nowTime);
-    String username = reqUser.name;
-    Util.jsonPut(reqJson, "author", username);
-    Util.jsonPut(reqJson, "updater", username);
-
     Path path = store.create(reqPath, reqJson, reqUser);
     rsp.setHeader("Location", req.getServletPath() + path.toString());
   }
@@ -306,12 +298,6 @@ public class Resource extends AbstractServlet {
     if (reqJson == null) {
       return;
     }
-
-    // TODO(pmy): RFC 8?? format.
-    String nowTime = new java.util.Date().getTime() + "";
-    Util.jsonPut(reqJson, "updated", nowTime);
-    String username = reqUser.name;
-    Util.jsonPut(reqJson, "updater", username);
 
     // The datastore API doesn't directly report whether create or
     // update happened, so this will require a fetch then set for the

@@ -292,7 +292,8 @@ angular.module('ngResource', ['ng']).
           encodedVal = encodeUriSegment(params[urlParam] || self.defaults[urlParam] || "");
           url = url.replace(new RegExp(":" + urlParam + "(\\W)"), encodedVal + "$1");
         });
-        url = url.replace(/\/?#$/, '');
+        // TODO(pmy): This breaks collection listing signalled by trailing slash.
+        // url = url.replace(/\/?#$/, '');
         var query = [];
         forEach(params, function(value, key){
           if (!self.urlParams[key]) {

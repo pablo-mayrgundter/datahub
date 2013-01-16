@@ -1,23 +1,21 @@
 <!doctype html>
-<html ng-app="demo">
+<html ng-app="demo" lang="en">
   <head>
-    <script type="text/javascript" src="angular-1.0.2.js"></script>
-    <script type="text/javascript" src="angular-resource-1.0.2.js"></script>
-    <script type="text/javascript" src="index.js"></script>
+    <script type="text/javascript" src="/js/angular-1.0.2.js"></script>
+    <script type="text/javascript" src="/js/angular-resource-1.0.2-fix.js"></script>
+    <script type="text/javascript" src="/js/index.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.js"></script>
+    <link rel="stylesheet" href="/css/bootstrap.css"/>
+    <link rel="stylesheet" href="/css/index.css"/>
   </head>
-  <body>
+  <body ng-controller="FileCtrl">
+    <h1>DataHub</h1>
 
-    <!-- Collection view of /data/test -->
-    <div ng-controller="DatasetCtrl">
-      <form>
-        <ul>
-          <li ng-repeat="item in dataset">
-            {{item}}
-          </li>
-        </ul>
-        <!--<a href="" ng-click="add()">add</a>-->
-      </form>
-    </div>
+    <p class="lead">A library for Google AppEngine that provides
+    REST+Search access to a JSON view of the Datastore.</p>
 
+    <hr>
+
+    <div ng-view></div>
   </body>
 </html>

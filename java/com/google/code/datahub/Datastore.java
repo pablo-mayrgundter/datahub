@@ -274,7 +274,7 @@ public class Datastore extends AbstractStore {
   public static JSONObject entitiesToJson(Iterable<Entity> entities) {
     JSONObject json = new JSONObject();
     for (Entity e : entities) {
-      Util.jsonPut(json, Path.fromKey(e.getKey()).toString(), entityToJson(e));
+      Util.jsonPut(json, Path.fromKey(e.getKey()).getFilename(), entityToJson(e));
     }
     return json;
   }

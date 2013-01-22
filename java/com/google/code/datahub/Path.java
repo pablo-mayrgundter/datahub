@@ -202,17 +202,21 @@ public class Path {
     }
     String s = "";
     for (Key key : path) {
-      if (key.getName() == null) {
-        s += SEP + "__" + key.getId() + "__";
-      } else {
-        s += SEP + key.getName();
-      }
+      s += SEP + getNameOrId(key);
     }
     return s;
   }
 
+  static String getNameOrId(Key key) {
+    if (key.getName() == null) {
+      return "__" + key.getId() + "__";
+    } else {
+      return key.getName();
+    }
+  }
+
   public String getFilename() {
-    return toKey().getName();
+    return getNameOrId(toKey());
   }
 
   public int hashCode() {

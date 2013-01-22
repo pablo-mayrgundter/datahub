@@ -1,12 +1,8 @@
 <div ng-controller="FileCtrl">
   <ol class="breadcrumb">
-    <li><a href="/">datahub <span class="divider">/</span></a></li>
-    <li>data <span class="divider">/</span></li>
-    <li class="active">
-      <input ng-model="path" class="span2" type="text" style="margin-top: 10px">
-      <button ng-click="list()" class="btn">List</button>
-      <button ng-click="mkdir()" class="btn">Create</button>
-    </li>
+    <li><a href="/">datahub</a> <span class="divider">/</span></li>
+    <li><a href="/#/data/">data</a> <span class="divider">/</span></li>
+    <li class="active">{{path}}</li>
   </ol>
   <hr>
   <div>
@@ -35,10 +31,19 @@
     </form>
   </div>
   <hr>
-  <div class="input-prepend">
-    <span class="add-on">Name (optional):</span>
-    <input ng-model="name" class="span2" type="text">
+  <button type="button" class="btn" data-toggle="collapse" data-target="#createButton">
+    Create
+  </button>
+  <div id="createButton" class="collapse">
+    <hr>
+    <div class="input-prepend">
+      <span class="add-on">Name (optional):</span>
+      <input ng-model="id" class="span2" type="text">
+    </div>
+<textarea id="object" rows="5" cols="20">{
+  "text":"Hello World!",
+  "count":10
+}</textarea><br/>
+    <button ng-click="save()" class="btn btn-primary">Save</button>
   </div>
-  <textarea id="object" rows="5" cols="20">{"c":"d"}</textarea><br/>
-  <button ng-click="save()" class="btn btn-primary">Save</button>
 </div>

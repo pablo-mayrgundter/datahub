@@ -9,62 +9,11 @@
     <link rel="stylesheet" href="/css/bootstrap.css"/>
     <link rel="stylesheet" href="/css/index.css"/>
   </head>
-  <body>
-    <div ng-controller="FileCtrl">
-      <ol class="breadcrumb">
-        <li ng-repeat="link in navLinks">
-          <a ng-href="#{{link['link']}}">{{link['name']}}</a> <span class="divider">/</span>
-        </li>
-      </ol>
-      <!--<hr>
-      path: {{loc.path()}}<br/>
-      pathParts: {{pathParts}}<br/>
-      subdirs: {{subdirs}}-->
-      <hr>
-      <div>
-        <form>
-          <table class="table table-striped">
-            <thead>
-              <tr>
-                <th>Path</th>
-                <th>Contents</th>
-                <th>Actions</th>
-            </thead>
-            <tbody>
-              <tr ng-repeat="(key,val) in subdirs">
-                <td>
-                  <!--path: {{path}}<br/>
-                  key: {{key}}<br/>-->
-                  <a ng-href="#{{loc.path()}}/{{key}}">{{getFile(key)}}</a></td>
-                <td>
-                  <ul>
-                    <li ng-repeat="(key,val) in val">{{key}}:{{val}}</li>
-                  </ul>
-                </td>
-                <td>
-                  <button ng-click="delete(key)" class="btn"><i class="icon-trash"></i> Delete</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </form>
-      </div>
-      <hr>
-      <button type="button" class="btn" data-toggle="collapse" data-target="#createButton">
-        Create
-      </button>
-      <div id="createButton" class="collapse">
-        <hr>
-        <div class="input-prepend">
-          <span class="add-on">Name (optional):</span>
-          <input ng-model="childName" class="span2" type="text">
-        </div>
-        <textarea id="childObject" rows="5" cols="20">{
-          "text":"Hello World!",
-          "count":10
-          }</textarea><br/>
-        <button ng-click="save()" class="btn btn-primary">Save</button>
-      </div>
-    </div>
+  <body ng-controller="FileCtrl">
+    <div ng-include src="'path-breadcrumb.html'"></div>
+    <hr>
+    <div ng-include src="'path-children.html'"></div>
+    <hr>
+    <div ng-include src="'path-create.html'"></div>
   </body>
 </html>

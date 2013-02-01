@@ -1,0 +1,28 @@
+<div>
+  <form>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Path</th>
+          <th>Contents</th>
+          <th>Actions</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="(key,val) in subdirs">
+          <td>
+            <!--path: {{path}}<br/>
+                key: {{key}}<br/>-->
+            <a ng-href="#{{loc.path()}}/{{key}}">{{getFile(key)}}</a></td>
+          <td>
+            <ul>
+              <li ng-repeat="(key,val) in val">{{key}}:{{val}}</li>
+            </ul>
+          </td>
+          <td>
+            <button ng-click="delete(key)" class="btn"><i class="icon-trash"></i> Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </form>
+</div>

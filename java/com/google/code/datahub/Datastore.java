@@ -49,6 +49,9 @@ public class Datastore extends AbstractStore {
   /** The key name for the ACL property. */
   static final String PROP_ACL_KEY = "##ACL##";
 
+  /** The key name for the internal-only parent-key pointer. */
+  static final String INTERNAL_PARENT_PROP = "##PARENT##";
+
   final DatastoreService service;
 
   public Datastore() {
@@ -92,12 +95,13 @@ public class Datastore extends AbstractStore {
                          User user) {
     check(path, user, Op.READ);
     Key key = path.toKey();
-    logger.fine("service.list, key: " + key);
-    // TODO(pmy): limit this to 1-level deep children.
-    Query q = new Query(key)
-      .addFilter(Entity.KEY_RESERVED_PROPERTY,
-                 Query.FilterOperator.GREATER_THAN,
-                 key);
+    // TODO(pmy): Shouldn't need to store the parent key in every
+    // entity to do this, but couldn't figure out how to limit results
+    // otherwise.
+    Query q = new Query(Path.PATH_KIND, Path.ROOT_KEY)
+      .setFilter(new Query.FilterPredicate(INTERNAL_PARENT_PROP,
+                                           Query.FilterOperator.EQUAL,
+                                           key));
     //.setKeysOnly();
     return entitiesToJson(service.prepare(q).asList(withLimit(10)));
   }
@@ -250,9 +254,9 @@ public class Datastore extends AbstractStore {
    * properties.
    */
   public static Entity jsonToEntity(Path path, JSONObject json) {
-    Entity entity = new Entity(path.toKey());
+    Key k = path.toKey();
+    Entity entity = new Entity(k);
     setProperties(entity, json);
-    entity.setProperty(Search.INTERNAL_QUERY_FIELD_PATH, Search.makePathTokens(path));
     return entity;
   }
 
@@ -268,6 +272,15 @@ public class Datastore extends AbstractStore {
           entity.setProperty(key, val);
         }
       });
+    Key key = entity.getKey();
+    Key parent = key.getParent();
+    if (parent == null) {
+      parent = Path.ROOT_KEY;
+    }
+    entity.setProperty(INTERNAL_PARENT_PROP, parent);
+    // TODO(pmy): search
+    //entity.setProperty(Search.INTERNAL_QUERY_FIELD_PATH,
+    // Search.makePathTokens(Path.fromKey(key)));
     return entity;
   }
 
@@ -283,7 +296,8 @@ public class Datastore extends AbstractStore {
     JSONObject json = new JSONObject();
     for (java.util.Map.Entry<String, Object> property : entity.getProperties().entrySet()) {
       String keyName = property.getKey();
-      if (keyName.startsWith(Search.INTERNAL_QUERY_FIELD_PATH)) {
+      if (keyName.equals(INTERNAL_PARENT_PROP)
+          || keyName.startsWith(Search.INTERNAL_QUERY_FIELD_PATH)) {
         continue;
       }
       Object val = property.getValue();

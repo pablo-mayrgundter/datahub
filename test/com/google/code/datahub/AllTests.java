@@ -30,6 +30,7 @@ public class AllTests {
    */
   public static TestSuite suite() {
     final TestSuite suite = new TestSuite();
+    suite.addTestSuite(DatastoreTest.class);
     suite.addTestSuite(PathTest.class);
     suite.addTestSuite(ResourceTest.class);
     suite.addTestSuite(SearchTest.class);

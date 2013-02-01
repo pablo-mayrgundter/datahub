@@ -60,8 +60,8 @@ abstract class AbstractStore implements Store {
                   user);
   }
 
-  @Override
-  public void update(Path path, final JSONObject objUpdates, User user) {
-    create(path, objUpdates, user);
-  }
+  //@Override
+  //public void update(Path path, final JSONObject objUpdates, User user) {
+  //  create(path, objUpdates, user);
+  //}
 }

@@ -81,7 +81,7 @@
         <pathelement path="test"/>
       </classpath>
       <formatter type="brief" usefile="false"/>
-      <test name="AllTests"/>
+      <test name="com.google.code.datahub.DatastoreTest"/>
     </junit>
   </target>
 

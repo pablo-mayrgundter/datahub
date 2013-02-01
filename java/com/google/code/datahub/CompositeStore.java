@@ -123,6 +123,6 @@ public class CompositeStore extends AbstractStore {
   @Override
   public void update(Path path, JSONObject json, User user) {
     datastore.update(path, json, user);
-    search.update(path, json, user);
+    //search.update(path, json, user);
   }
 }

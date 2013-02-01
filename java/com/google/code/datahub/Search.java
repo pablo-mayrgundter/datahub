@@ -43,7 +43,7 @@ import java.util.logging.Logger;
 /**
  * JSON api combining to api.search and api.prospectivesearch.
  *
- * TODO(pmy): replace with, or promot to, a unified search API.
+ * TODO(pmy): replace with, or promote to, a unified search API.
  *
  * TODO(pmy): User are required arguments for Store methods, but are
  * currently ignored by the Search system as they're expected to be
@@ -90,7 +90,7 @@ public class Search extends AbstractStore {
 
   /**
    * Wrapper class for ProspectiveSearchService to encapsulate topic
-   * reference.
+  * reference.
    */
   static class ProspectiveSearchIndex {
     static final ProspectiveSearchService pss =
@@ -206,9 +206,11 @@ public class Search extends AbstractStore {
    */
   @Override
   public Path create(Path path, JSONObject obj, User user) {
+    System.out.printf("%s.isParentOf(%s)\n", corpusPath, path);
     if (!corpusPath.isParentOf(path)) {
       throw new IllegalArgumentException(
-          String.format("path(%s) must be a sub-path of this corpusPath(%s)", path, corpusPath));
+          String.format("path(%s) must be a sub-path of this corpusPath(%s)",
+                        path, corpusPath));
     }
     try {
       create(path, jsonToDocument(path, obj), Datastore.jsonToEntity(path, obj));
@@ -388,6 +390,10 @@ public class Search extends AbstractStore {
     return rspJson;
   }
 
+  @Override
+  public void update(Path path, final JSONObject objUpdates, User user) {
+    throw new UnsupportedOperationException();
+  }
 
   // Helpers
 

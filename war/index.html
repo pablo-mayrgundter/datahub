@@ -5,15 +5,17 @@
     <script type="text/javascript" src="/js/angular-1.0.2.js"></script>
     <script type="text/javascript" src="/js/angular-resource-1.0.2-fix.js"></script>
     <script type="text/javascript" src="/js/bootstrap.js"></script>
-    <script type="text/javascript" src="/js/index.js"></script>
+    <script type="text/javascript" src="/js/FileCtrl.js"></script>
     <link rel="stylesheet" href="/css/bootstrap.css"/>
     <link rel="stylesheet" href="/css/index.css"/>
   </head>
   <body ng-controller="FileCtrl">
     <div ng-include src="'path-breadcrumb.html'"></div>
-    <hr>
+    <hr/>
+    <h2>Current Object</h2>
+    <div ng-include src="'path-edit.html'"></div>
+    <hr/>
+    <h2>Child Objects</h2>
     <div ng-include src="'path-children.html'"></div>
-    <hr>
-    <div ng-include src="'path-create.html'"></div>
   </body>
 </html>

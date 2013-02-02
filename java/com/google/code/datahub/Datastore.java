@@ -274,9 +274,7 @@ public class Datastore extends AbstractStore {
       });
     Key key = entity.getKey();
     Key parent = key.getParent();
-    if (parent == null) {
-      parent = Path.ROOT_KEY;
-    }
+    // TODO(pmy): parent may be null: does this matter?
     entity.setProperty(INTERNAL_PARENT_PROP, parent);
     // TODO(pmy): search
     //entity.setProperty(Search.INTERNAL_QUERY_FIELD_PATH,

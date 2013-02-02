@@ -48,35 +48,42 @@ function FileCtrl($scope, $location, $http) {
       }
       p = p.substring(1);
       $scope.pathParts = p.split('/');
+      $scope.fileName = $scope.pathParts[$scope.pathParts.length - 1];
       $scope.setNavLinks();
     });
 
   // to be used for put/name create below.
-  $scope.childName = '';
+  $scope.fileName = '';
 
-  $scope.save = function() {
-    var obj = compileSource('childObject');
-    log('childObject: ', obj);
-    if ($scope.childName) {
-      var path = $scope.loc.path() + '/' + $scope.childName;
-      // PUT requires a name.
-      $http.put(path, obj).success(function() {
-          $scope.subdirs[$scope.childName] = obj;
-        });
-    } else {
-      // POST will be allocated a name, specified in the response
-      // Location header.
-      $http.post($scope.loc.path() + '/', obj).success(function(data, status, headers) {
-          var path = headers('Location');
-          if (path) {
-            var pathParts = path.split('/');
-            var newName = pathParts[pathParts.length - 1];
-            $scope.subdirs[newName] = obj;
-          } else {
-            log('Missing Location header in successful response.')
-          }
-        });
+  $scope.save = function(name) {
+    var obj = compileSource('fileObject');
+    var newPathParts = [];
+    newPathParts = newPathParts.concat($scope.pathParts);
+    newPathParts[newPathParts.length - 1] = name;
+    var newPath = '';
+    for (var i in newPathParts) {
+      var part = newPathParts[i];
+      newPath += '/' + part;
     }
+    // PUT requires a name.
+    $http.put(newPath, obj).success(function() {
+        log('OK');
+      });
+  };
+
+  $scope.add = function() {
+    // POST will be allocated a name, specified in the response
+    // Location header.
+    $http.post($scope.loc.path() + '/', obj).success(function(data, status, headers) {
+        var path = headers('Location');
+        if (path) {
+          var pathParts = path.split('/');
+          var newName = pathParts[pathParts.length - 1];
+          $scope.subdirs[newName] = obj;
+        } else {
+          log('Missing Location header in successful response.')
+        }
+      });
   };
 
   $scope.delete = function(name) {

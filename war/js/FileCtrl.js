@@ -4,6 +4,11 @@ var root = 'data';
 
 function FileCtrl($scope, $location, $http) {
   $scope.loc = $location;
+  // TODO(pmy): This is currently the root for the servlet config.
+  // Need to do something cleaner here.
+  if ($scope.loc.path() == '') {
+    $scope.loc.path('/data');
+  }
   $scope.pathParts = [];
   $scope.content = {};
   $scope.subdirs = {};
@@ -71,18 +76,10 @@ function FileCtrl($scope, $location, $http) {
       });
   };
 
-  $scope.add = function() {
-    // POST will be allocated a name, specified in the response
-    // Location header.
-    $http.post($scope.loc.path() + '/', obj).success(function(data, status, headers) {
-        var path = headers('Location');
-        if (path) {
-          var pathParts = path.split('/');
-          var newName = pathParts[pathParts.length - 1];
-          $scope.subdirs[newName] = obj;
-        } else {
-          log('Missing Location header in successful response.')
-        }
+  $scope.add = function(name) {
+    var newPath = $scope.loc.path() + '/' + name;
+    $http.put(newPath, {}).success(function(data, status, headers) {
+        $scope.loc.path(newPath);
       });
   };
 

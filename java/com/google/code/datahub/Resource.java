@@ -312,9 +312,11 @@ public class Resource extends AbstractServlet {
   protected JSONObject readJsonOrBadRequest(String errorMsg,
                                             HttpServletResponse rsp) throws IOException {
     String postBody = readPostBody(req.getReader());
-    JSONObject reqObj;
     try {
-      return new JSONObject(postBody);
+      System.out.println("POST BODY: " + postBody);
+      JSONObject o = new JSONObject(postBody);
+      System.out.println("\nPARSED OBJECT: " + o);
+      return o;
     } catch (JSONException e) {
       badRequest(errorMsg, rsp);
       return null;

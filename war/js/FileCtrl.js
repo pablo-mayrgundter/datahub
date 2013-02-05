@@ -14,6 +14,9 @@ function FileCtrl($scope, $location, $http) {
   $scope.subdirs = {};
   $scope.navLinks = [];
 
+  /** Used by put actions. */
+  $scope.fileName = '';
+
   $scope.getFile = function (path) {
     var parts = path.split('/');
     return parts[parts.length - 1];
@@ -22,11 +25,11 @@ function FileCtrl($scope, $location, $http) {
   $scope.setNavLinks = function() {
     $scope.navLinks.length = 0;
     var links = [];
-    var path = '/';
+    var path = '';
     var count = 0;
     for (var p in $scope.pathParts) {
       var part = $scope.pathParts[p];
-      path += part + '/';
+      path += '/' + part;
       var obj = {"link":path,"name":part};
       $scope.navLinks.push(obj);
     }
@@ -56,9 +59,6 @@ function FileCtrl($scope, $location, $http) {
       $scope.fileName = $scope.pathParts[$scope.pathParts.length - 1];
       $scope.setNavLinks();
     });
-
-  // to be used for put/name create below.
-  $scope.fileName = '';
 
   $scope.save = function(name) {
     var obj = compileSource('fileObject');

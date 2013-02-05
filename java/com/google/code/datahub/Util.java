@@ -19,17 +19,29 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Utilities for streams and Entity/JSON conversion.
+ * Utilities for streams and JSON.
  *
  * @author Pablo Mayrgundter
  */
 public final class Util {
 
   /**
+   * Visitor that recognized the primitives json.org's JSONObject
+   * supports.  The default handling is to call visit(String, Object)
+   * for all types.
+   *
    * @see #visitJson(JSONObject, Visitor)
+   * @see http://www.json.org/javadoc/org/json/JSONObject.html
    */
-  public static interface Visitor {
-    void visit(String key, String val);
+  public static abstract class Visitor {
+    abstract void visit(String key, Object val);
+    void visit(String key, Boolean val) { visit(key, (Object) val); }
+    void visit(String key, Double val) { visit(key, (Object) val); }
+    void visit(String key, Integer val) { visit(key, (Object) val); }
+    void visit(String key, JSONArray val) { visit(key, (Object) val); }
+    void visit(String key, JSONObject val) { visit(key, (Object) val); }
+    void visit(String key, Long val) { visit(key, (Object) val); }
+    void visit(String key, String val) { visit(key, (Object) val); }
   }
 
   /**
@@ -48,7 +60,23 @@ public final class Util {
         // we iterate its keys.
         throw new java.util.ConcurrentModificationException(e.getMessage());
       }
-      visitor.visit(key, "" + val);
+      if (val instanceof Boolean) {
+        visitor.visit(key, (Boolean) val);
+      } else if (val instanceof Double) {
+        visitor.visit(key, (Double) val);
+      } else if (val instanceof Integer) {
+        visitor.visit(key, (Integer) val);
+      } else if (val instanceof JSONArray) {
+        visitor.visit(key, (JSONArray) val);
+      } else if (val instanceof JSONObject) {
+        visitor.visit(key, (JSONObject) val);
+      } else if (val instanceof Long) {
+        visitor.visit(key, (Long) val);
+      } else if (val instanceof String) {
+        visitor.visit(key, (String) val);
+      } else {
+        visitor.visit(key, val);
+      }
     }
   }
 
@@ -57,6 +85,9 @@ public final class Util {
    * exception handling, and return the json object for chaining.
    */
   public static JSONObject jsonPut(JSONObject obj, String field, Object val) {
+    if (field == null) {
+      throw new NullPointerException("JSONObject doesn't allow null keys.");
+    }
     try {
       obj.put(field, val);
     } catch (JSONException e) {

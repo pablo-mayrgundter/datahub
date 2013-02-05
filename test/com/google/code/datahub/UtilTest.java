@@ -51,9 +51,10 @@ public class UtilTest extends TestCase {
   }
 
   public void testVisitJson() throws Exception {
-    final Map<String, String> map = new HashMap<String, String>();
+    final Map<String, Object> map = new HashMap<String, Object>();
     Util.visitJson(json, new Util.Visitor() {
-        public void visit(String key, String val) {
+        // TODO(pmy): fully test various types.
+        public void visit(String key, Object val) {
           map.put(key, val);
         }
       });

@@ -16,16 +16,20 @@ package com.google.code.datahub;
 
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.EmbeddedEntity;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.PropertyContainer;
 import com.google.appengine.api.datastore.Query;
 import static com.google.appengine.api.datastore.FetchOptions.Builder.*;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Collection;
 import java.util.logging.Logger;
 
 /**
@@ -267,11 +271,7 @@ public class Datastore extends AbstractStore {
    * @return the given Entity.
    */
   static Entity setProperties(final Entity entity, JSONObject json) {
-    Util.visitJson(json, new Util.Visitor() {
-        public void visit(String key, String val) {
-          entity.setProperty(key, val);
-        }
-      });
+    setProperties((PropertyContainer) entity, json);
     Key key = entity.getKey();
     Key parent = key.getParent();
     // TODO(pmy): parent may be null: does this matter?
@@ -279,6 +279,43 @@ public class Datastore extends AbstractStore {
     // TODO(pmy): search
     //entity.setProperty(Search.INTERNAL_QUERY_FIELD_PATH,
     // Search.makePathTokens(Path.fromKey(key)));
+    return entity;
+  }
+
+  /** Recursive callee of setProperties(Entity, JSONObject). */
+  static PropertyContainer setProperties(final PropertyContainer entity, JSONObject json) {
+    Util.visitJson(json, new Util.Visitor() {
+        void visit(String key, Object val) { entity.setProperty(key, val); }
+        void visit(String key, Boolean val) { entity.setProperty(key, val); }
+        void visit(String key, Double val) { entity.setProperty(key, val); }
+        void visit(String key, Integer val) { entity.setProperty(key, val); }
+        void visit(String key, Long val) { entity.setProperty(key, val); }
+        void visit(String key, String val) { entity.setProperty(key, val); }
+        void visit(String key, JSONObject val) {
+          EmbeddedEntity embedded = new EmbeddedEntity();
+          setProperties(embedded, val);
+          entity.setProperty(key, embedded);
+        }
+        void visit(String key, JSONArray val) {
+          Object [] arr = new Object[val.length()];
+          for (int i = 0; i < arr.length; i++) {
+            Object arrVal;
+            try {
+              arrVal = val.get(i);
+            } catch(JSONException e) {
+              throw new ArrayIndexOutOfBoundsException(""+e);
+            }
+            if (arrVal instanceof JSONObject) {
+              EmbeddedEntity embedded = new EmbeddedEntity();
+              setProperties(embedded, (JSONObject) arrVal);
+              arr[i] = embedded;
+            } else {
+              arr[i] = arrVal;
+            }
+          }
+          entity.setProperty(key, arr);
+        }
+      });
     return entity;
   }
 
@@ -290,7 +327,7 @@ public class Datastore extends AbstractStore {
     return json;
   }
 
-  public static JSONObject entityToJson(Entity entity) {
+  public static JSONObject entityToJson(PropertyContainer entity) {
     JSONObject json = new JSONObject();
     for (java.util.Map.Entry<String, Object> property : entity.getProperties().entrySet()) {
       String keyName = property.getKey();
@@ -299,16 +336,37 @@ public class Datastore extends AbstractStore {
         continue;
       }
       Object val = property.getValue();
-      // TODO(pmy): JSONObject does not accept null values.
+      if (keyName == null) {
+        throw new NullPointerException("json.org's JSON doesn't allow null keys.");
+      }
       if (val == null) {
-        continue;
-      }
-      if (val instanceof com.google.appengine.api.datastore.Text) {
+        val = JSONObject.NULL;
+      } else if (val instanceof EmbeddedEntity) {
+        val = entityToJson((EmbeddedEntity) val);
+      } else if (val instanceof Collection) {
+        JSONArray arr = new JSONArray();
+        int i = 0;
+        for (Object o : (Collection) val) {
+          if (o instanceof EmbeddedEntity) {
+            o = entityToJson((EmbeddedEntity) o);
+          }
+          try {
+            arr.put(i++, o);
+          } catch (JSONException e) {
+            // "if the value is a non-finite number." - json.org
+            throw new RuntimeException(e);
+          }
+        }
+        val = arr;
+      } else if (val instanceof com.google.appengine.api.datastore.Text) {
         val = ((com.google.appengine.api.datastore.Text) val).getValue();
-      } else if (val instanceof Number) {
-        val = "" + val;
       }
-      Util.jsonPut(json, keyName, val);
+      try {
+        json.put(keyName, val);
+      } catch (JSONException e) {
+        // "if the value is a non-finite number." - json.org
+        throw new RuntimeException(e);
+      }
     }
     return json;
   }

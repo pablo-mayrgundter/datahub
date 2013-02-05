@@ -441,8 +441,9 @@ public class Search extends AbstractStore {
   static Document jsonToDocument(Path path, JSONObject json) {
     final Document.Builder docBuilder = Document.newBuilder();
     Util.visitJson(json, new Util.Visitor() {
-        public void visit(String key, String val) {
-          docBuilder.addField(Field.newBuilder().setName(key).setText(val));
+        // TODO(pmy): handle different val types.
+        public void visit(String key, Object val) {
+          docBuilder.addField(Field.newBuilder().setName(key).setText(val.toString()));
         }
       });
 

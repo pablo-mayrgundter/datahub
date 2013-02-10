@@ -29,6 +29,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 
@@ -46,7 +47,6 @@ import java.util.logging.Logger;
 public class Datastore extends AbstractStore {
 
   protected static final Logger logger = Logger.getLogger(Resource.class.getName());
-  protected static final Logger aclLogger = Logger.getLogger(Datastore.class.getName() + "_ACLs");
 
   static final int DEFAULT_QUERY_LIMIT = 10;
 
@@ -67,7 +67,6 @@ public class Datastore extends AbstractStore {
   @Override
   public Path create(Path parent, JSONObject json, User user) {
     logger.fine("create, parent path: " + parent);
-    check(parent, user, Op.CREATE);
     final Key parentKey = parent.toKey();
     logger.fine("create, parent key: " + parentKey);
     return create(new Entity(Path.PATH_KIND, parentKey), json, user);
@@ -76,7 +75,6 @@ public class Datastore extends AbstractStore {
   @Override
   public Path create(Path parent, String name, JSONObject json, User user) {
     logger.fine("create, parent path: " + parent);
-    check(parent, user, Op.CREATE);
     final Key parentKey = parent.toKey();
     logger.fine("create, parent key: " + parentKey);
     return create(new Entity(Path.resolvePart(name, parentKey)), json, user);
@@ -86,8 +84,8 @@ public class Datastore extends AbstractStore {
   public void delete(User user, Path ... paths) {
     Key [] keys = new Key[paths.length];
     for (int i = 0; i < keys.length; i++) {
-      check(paths[i], user, Op.DELETE);
       keys[i] = paths[i].toKey();
+      assertExists(paths[i]);
     }
     service.delete(keys);
   }
@@ -97,7 +95,6 @@ public class Datastore extends AbstractStore {
                          int offset, int limit, String [] fields, int [] order,
                          String reqEndpointId, long duration,
                          User user) {
-    check(path, user, Op.READ);
     Key key = path.toKey();
     // TODO(pmy): Shouldn't need to store the parent key in every
     // entity to do this, but couldn't figure out how to limit results
@@ -106,17 +103,16 @@ public class Datastore extends AbstractStore {
       .setFilter(new Query.FilterPredicate(INTERNAL_PARENT_PROP,
                                            Query.FilterOperator.EQUAL,
                                            key));
-    //.setKeysOnly();
+    // TODO(pmy): just .setKeysOnly(); ?
     return entitiesToJson(service.prepare(q).asList(withLimit(10)));
   }
 
   @Override
   public JSONObject retrieve(Path path, User user) {
-    check(path, user, Op.READ);
-    // TODO(pmy): remove this try/catch when ACLs check is actually
-    // performed, as it will throw for missing..
     Key key = path.toKey();
     logger.fine("service.get: " + key);
+    // TODO(pmy): remove this try/catch when ACLs check is actually
+    // performed, as it will throw for missing..
     try {
       return entityToJson(service.get(key));
     } catch (EntityNotFoundException e) {
@@ -124,20 +120,14 @@ public class Datastore extends AbstractStore {
     }
   }
 
+  /** Named create uses this path. */
   @Override
   public void update(Path path, JSONObject json, User user) {
-    // Named create uses this path.
-    try {
-      check(path, user, Op.UPDATE);
-    } catch (NotFoundException e) {
-      // TODO(pmy): OK?
-    }
     service.put(jsonToEntity(path, json));
   }
 
   @Override
   public JSONObject search(Path path, String query, User user) {
-    check(path, user, Op.READ);
     return search(path, query, 0, DEFAULT_LIMIT, null, null, null, DURATION_UNDEFINED, user);
   }
 
@@ -148,12 +138,13 @@ public class Datastore extends AbstractStore {
                            String [] fields, int [] order,
                            String endpointId, long duration,
                            User user) {
-    check(path, user, Op.READ);
     return entitiesToJson(service.prepare(parseQuery(path, query))
                           .asQueryResultList(FetchOptions.Builder
                                              .withOffset(offset)
                                              .limit(limit)));
   }
+
+  // Helpers.
 
   /**
    * Helper for the two public add methods, once the entity has been
@@ -166,42 +157,12 @@ public class Datastore extends AbstractStore {
     return Path.fromKey(key);
   }
 
-  /**
-   * @throws OperationRestrictedException If the given tuple is restricted.
-   */
-  final void check(Path path, User user, Op op) throws SecurityException {
-    // TODO(pmy): cache key ACLs?
-    Key key = path.toKey();
-    aclLogger.fine(String.format("path(%s) key(%s) operation(%s) check for user(%s)",
-                                 path, key, op, user));
-    Entity entity;
+  void assertExists(Path path) {
     try {
-      entity = service.get(key);
+      service.get(path.toKey());
     } catch (EntityNotFoundException e) {
-      aclLogger.fine("check: not found!");
       throw new NotFoundException(path);
     }
-    aclLogger.fine("check: found!");
-    String aclStr = (String) entity.getProperty(PROP_ACL_KEY);
-    if (aclStr == null) {
-      aclLogger.fine("Got to getProperty(ACL); the rest is unimplemented");
-      return;
-    }
-    JSONObject acl;
-    // TODO(pmy): don't use JSON here.
-    try {
-      acl = new JSONObject(aclStr);
-    } catch (JSONException e) {
-      throw new IllegalStateException("Invalid ACL string: " + aclStr);
-    }
-    if (isRestrictedInAcl(acl, user, op)) {
-      aclLogger.warning(String.format("path(%s) operation(%s) check for user(%s)", path, op, user));
-      throw new OperationRestrictedException(path, user, op);
-    }
-  }
-
-  boolean isRestrictedInAcl(JSONObject acl, User user, Op op) {
-    return false;
   }
 
   // Query support.
@@ -297,23 +258,23 @@ public class Datastore extends AbstractStore {
           entity.setProperty(key, embedded);
         }
         void visit(String key, JSONArray val) {
-          Object [] arr = new Object[val.length()];
-          for (int i = 0; i < arr.length; i++) {
+          Collection<Object> objs = new ArrayList<Object>(val.length());
+          for (int i = 0; i < val.length(); i++) {
             Object arrVal;
             try {
               arrVal = val.get(i);
             } catch(JSONException e) {
-              throw new ArrayIndexOutOfBoundsException(""+e);
+              throw new ArrayIndexOutOfBoundsException("" + e);
             }
             if (arrVal instanceof JSONObject) {
               EmbeddedEntity embedded = new EmbeddedEntity();
               setProperties(embedded, (JSONObject) arrVal);
-              arr[i] = embedded;
+              objs.add(embedded);
             } else {
-              arr[i] = arrVal;
+              objs.add(arrVal);
             }
           }
-          entity.setProperty(key, arr);
+          entity.setProperty(key, objs);
         }
       });
     return entity;

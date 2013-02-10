@@ -33,14 +33,14 @@ import org.json.JSONObject;
 public class CompositeStore extends AbstractStore {
 
   public final Store datastore;
-  public final Datastore datastoreAsAclService;
+  public final SecureDatastore datastoreAsAclService;
   public final Store search;
 
   /**
    * @param parentCorpusPath may be null.
    */
   CompositeStore(Path corpusPath, Path parentCorpusPath) {
-    datastoreAsAclService = new Datastore();
+    datastoreAsAclService = new SecureDatastore();
     datastore = datastoreAsAclService;
     search = new Search(corpusPath, parentCorpusPath);
   }
@@ -106,7 +106,7 @@ public class CompositeStore extends AbstractStore {
 
   @Override
   public JSONObject retrieveQueries(User user, Path path, int limit, long expiresBefore) {
-    datastoreAsAclService.check(path, user, Datastore.Op.READ);
+    datastoreAsAclService.assertNotRestricted(path, user, Datastore.Op.READ);
     return search.retrieveQueries(user, path, limit, expiresBefore);
   }
 
@@ -115,7 +115,7 @@ public class CompositeStore extends AbstractStore {
                            int offset, int limit, String [] fields, int [] order,
                            String endpointId, long duration,
                            User user) {
-    datastoreAsAclService.check(path, user, Datastore.Op.READ);
+    datastoreAsAclService.assertNotRestricted(path, user, Datastore.Op.READ);
     return search.search(path, query, offset, limit, fields, order, endpointId, duration, user);
   }
 

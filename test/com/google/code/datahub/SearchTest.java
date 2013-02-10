@@ -68,7 +68,7 @@ public class SearchTest extends UtilTest {
       {"/a/b", "ROOTa_P2Fb ROOTa ROOT"},
     };
     for (String [] pathAndTokens : pathsToTokens) {
-      Path p = new Path(pathAndTokens[0]);
+      Path p = Path.fromString(pathAndTokens[0]);
       assertEquals("path tokens",
                    pathAndTokens[1], Search.makePathTokens(p));
     }

@@ -34,6 +34,7 @@ public class AllTests {
     suite.addTestSuite(PathTest.class);
     suite.addTestSuite(ResourceTest.class);
     suite.addTestSuite(SearchTest.class);
+    suite.addTestSuite(SecureDatastoreTest.class);
     suite.addTestSuite(UtilTest.class);
     return suite;
   }

@@ -64,14 +64,14 @@ public class PathTest extends TestCase {
     String name = "name";
     Key pathKey = KeyFactory.createKey(Path.ROOT_KEY, Path.PATH_KIND, name);
     Key kindKey = KeyFactory.createKey(Path.ROOT_KEY, kind, name);
-    assertEquals(pathKey, Path.resolvePart(name, null));
-    assertEquals(kindKey, Path.resolvePart(String.format("%s(%s)", kind, name), null));
+    assertEquals(pathKey, Path.resolvePart(name, Path.ROOT_KEY));
+    assertEquals(kindKey, Path.resolvePart(String.format("%s(%s)", kind, name), Path.ROOT_KEY));
   }
 
   public void testToKey() {
     for (String [] testCase : testPaths) {
       String strPath = testCase[0];
-      Path path = new Path(strPath);
+      Path path = Path.fromString(strPath);
       Key key = path.toKey();
       Path pathFromKey = Path.fromKey(key);
       String strFromPath = pathFromKey.toString();
@@ -85,7 +85,7 @@ public class PathTest extends TestCase {
 
   public void testDocIdRecoding() {
     for (String [] testCase : testPaths) {
-      String docId = new Path(testCase[0]).toDocId();
+      String docId = Path.fromString(testCase[0]).toDocId();
       assertEquals("docId encoding", testCase[1], docId);
       String roundtripPath = Path.fromDocId(docId).toString();
       if (testCase.length == 3) {

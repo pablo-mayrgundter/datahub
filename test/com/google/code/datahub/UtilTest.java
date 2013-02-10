@@ -35,7 +35,7 @@ public class UtilTest extends TestCase {
   JSONObject json = null;
 
   public void setUp() {
-    path = new Path(pathStr);
+    path = Path.fromString(pathStr);
     json = new JSONObject();
     try {
       json.put("a", "b");

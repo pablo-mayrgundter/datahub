@@ -28,6 +28,8 @@ import org.json.JSONObject;
  */
 public interface Store {
 
+  // TODO(pmy): Consider putting ACLs should in a sub-interface,
+  // symmetrical with Store/Datastore.
   /**
    * Thrown when the ACL for a given resource restricts the operation
    * for the requesting user.

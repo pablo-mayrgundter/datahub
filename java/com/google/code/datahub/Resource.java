@@ -74,7 +74,7 @@ public class Resource extends AbstractServlet {
   /**
    * The backing searchable datastore.
    */
-  protected Store store;
+  protected CompositeStore store;
 
   public Resource() {}
 
@@ -89,7 +89,8 @@ public class Resource extends AbstractServlet {
                                                     + " init param 'path'",
                                                     getServletConfig().getServletName()));
     }
-    store = new CompositeStore(new Path(path), parentPath == null ? null : new Path(parentPath));
+    store = new CompositeStore(Path.fromString(path),
+                               parentPath == null ? null : Path.fromString(parentPath));
   }
 
   // HTTP method delegation: service, DELETE, GET, POST, PUT
@@ -103,7 +104,7 @@ public class Resource extends AbstractServlet {
   public void service(final HttpServletRequest req, final HttpServletResponse rsp)
       throws ServletException, IOException {
     // Setup for handling this request.
-    reqPath = new Path(req);
+    reqPath = Path.fromRequest(req);
     reqUser = new User(req);
 
     // Trigger delegated handling (via super) in this servlet and
@@ -204,7 +205,22 @@ public class Resource extends AbstractServlet {
     if (reqPath.isSpecial()
         && !reqPath.isSpecialSerial()) {
       String filename = reqPath.getFilename();
-      if (filename.equals("__index__")) {
+      if (filename.equals("__acl__")) {
+        if (!reqUser.isAdmin() && false) {
+          throw new IllegalStateException("Only the admin may query restrictions.");
+        }
+        // __acl__ requests are on the parent.
+        reqPath = reqPath.getParent();
+        final String reqRestrictUser = param("user");
+        final String reqRestrictOp = param("op");
+
+        final User restrictUser = new User(reqRestrictUser);
+        final boolean restricted =
+          store.datastoreAsAclService.isRestricted(reqPath, restrictUser,
+                                                   Store.Op.valueOf(reqRestrictOp.toUpperCase()));
+        httpOk(restricted ? "restricted" : "allowed", rsp);
+        return;
+      } else if (filename.equals("__index__")) {
         String queries = paramAllowNull("queries");
         if (queries == null) {
           httpOk(store.getIndexMap(reqPath, reqUser), rsp);
@@ -220,7 +236,7 @@ public class Resource extends AbstractServlet {
         // better way to do this would be to provide the
         // administrative interface expicitly there.
 
-        ((Search) ((CompositeStore) store).search)
+        ((Search) store.search)
             .queryIndex.pss.unsubscribe(req.getParameter("topic"),
                                         req.getParameter("queryId"));
         httpOk("Queries deleted", rsp);
@@ -293,6 +309,29 @@ public class Resource extends AbstractServlet {
   @Override
   public void doPut(HttpServletRequest req, HttpServletResponse rsp)
       throws ServletException, IOException {
+    String filename = reqPath.getFilename();
+    if (filename.equals("__acl__")) {
+      if (!reqUser.isAdmin() && false) {
+        throw new IllegalStateException("Only the admin may modify restrictions.");
+      }
+      // __acl__ requests are on the parent.
+      reqPath = reqPath.getParent();
+      final String reqRestrictUser = param("user");
+      final String reqRestrictOp = param("op");
+      final String reqRestrictClear = paramAllowNull("clear");
+
+      final User restrictUser = new User(reqRestrictUser);
+      final boolean restrictClear = reqRestrictClear != null;
+      if (restrictClear) {
+        store.datastoreAsAclService.clearRestricted(reqPath, restrictUser,
+                                                    Store.Op.valueOf(reqRestrictOp.toUpperCase()));
+      } else {
+        store.datastoreAsAclService.setRestricted(reqPath, restrictUser,
+                                                  Store.Op.valueOf(reqRestrictOp.toUpperCase()));
+      }
+      return;
+    }
+
     reqJson = readJsonOrBadRequest("The request must include a JSON-encoded object.",
                                    rsp);
     if (reqJson == null) {

@@ -83,13 +83,16 @@ public final class Util {
   /**
    * Wrapper to convert JSONObject.put calls from checked to unchecked
    * exception handling, and return the json object for chaining.
+   *
+   * @throws IllegalArgumentException if JSONObject.put throws JSONException.
+   * @throws NullPointerException if fieldName is null.
    */
-  public static JSONObject jsonPut(JSONObject obj, String field, Object val) {
-    if (field == null) {
+  public static JSONObject jsonPut(JSONObject obj, String fieldName, Object val) {
+    if (fieldName == null) {
       throw new NullPointerException("JSONObject doesn't allow null keys.");
     }
     try {
-      obj.put(field, val);
+      obj.put(fieldName, val);
     } catch (JSONException e) {
       throw new IllegalArgumentException(e);
     }
@@ -97,11 +100,30 @@ public final class Util {
   }
 
   /**
-   * Append the value to the array at the given object field.
+   * Wrapper to convert JSONObject.get call to return null instead of
+   * throw exception on missing value.
+   *
+   * @throws NullPointerException if fieldName is null.
    */
-  public static JSONObject jsonAppend(JSONObject obj, String field, Object val) {
+  public static JSONObject jsonGet(JSONObject obj, String fieldName) {
+    if (fieldName == null) {
+      throw new NullPointerException("JSONObject doesn't allow null keys.");
+    }
     try {
-      obj.append(field, val);
+      return obj.getJSONObject(fieldName);
+    } catch (JSONException e) {
+      return null;
+    }
+  }
+
+  /**
+   * Append the value to the array at the given object fieldName.
+   *
+   * @throws IllegalArgumentException if JSONObject.put throws JSONException.
+   */
+  public static JSONObject jsonAppend(JSONObject obj, String fieldName, Object val) {
+    try {
+      obj.append(fieldName, val);
     } catch (JSONException e) {
       throw new IllegalArgumentException(e);
     }

@@ -195,7 +195,7 @@ public class Search extends AbstractStore {
    */
   @Override
   public Path create(Path path, String name, JSONObject obj, User user) {
-    return create(new Path(path + Path.SEP + name), obj, user);
+    return create(Path.fromString(path + Path.SEP + name), obj, user);
   }
 
   /**

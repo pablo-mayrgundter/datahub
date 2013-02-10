@@ -59,53 +59,55 @@ public class DatastoreTest extends TestCase {
   }
 
   public void testAllocatedCreate() throws Exception {
-    Path parent = new Path("/");
+    Path parent = Path.ROOT;
     JSONObject obj = new JSONObject();
 
-    assertEquals(new Path("/__1__"),
+    assertEquals(Path.fromString("/__1__"),
                  datastore.create(parent, obj, User.TEST_USER));
 
-    assertEquals(new Path("/__2__"),
+    assertEquals(Path.fromString("/__2__"),
                  datastore.create(parent, obj, User.TEST_USER));
 
-    assertEquals(new Path("/__3__"),
+    assertEquals(Path.fromString("/__3__"),
                  datastore.create(parent, obj, User.TEST_USER));
 
-    assertEquals(new Path("/__2__/__4__"),
-                 datastore.create(new Path("/__2__"), obj, User.TEST_USER));
+    assertEquals(Path.fromString("/__2__/__4__"),
+                 datastore.create(Path.fromString("/__2__"), obj, User.TEST_USER));
   }
 
   public void testNamedCreate() throws Exception {
     Path parent = null;
     JSONObject obj = new JSONObject();
 
-    assertEquals(new Path("/foo"),
-                 parent = datastore.create(new Path("/"),
+    assertEquals(Path.fromString("/foo"),
+                 parent = datastore.create(Path.ROOT,
                                            "foo",
                                            obj,
                                            User.TEST_USER));
 
-    assertEquals(new Path("/foo/bar"),
+    assertEquals(Path.fromString("/foo/bar"),
                  datastore.create(parent, "bar", obj, User.TEST_USER));
   }
 
   public void testDelete() throws Exception {
-    Path parent = new Path("/");
+    Path parent = Path.ROOT;
     JSONObject obj = new JSONObject();
 
     for (int i = 0; i < 3; i++) {
       datastore.create(parent, obj, User.TEST_USER);
     }
 
-    Path [] paths = new Path[]{new Path("/__1__"),
-                               new Path("/__2__"),
-                               new Path("/__3__")};
+    Path [] paths = new Path[]{Path.fromString("/__1__"),
+                               Path.fromString("/__2__"),
+                               Path.fromString("/__3__")};
     for (Path p : paths) {
       datastore.delete(User.TEST_USER, p);
     }
+  }
 
+  public void testDeleteNonexistent() throws Exception {
     try {
-      datastore.delete(User.TEST_USER, new Path("/pinkelephant"));
+      datastore.delete(User.TEST_USER, Path.fromString("/pinkelephant"));
       fail("Delete of non-existent object allowed.");
     } catch (Store.NotFoundException e) {
       // OK
@@ -113,21 +115,21 @@ public class DatastoreTest extends TestCase {
   }
 
   public void testMultiDelete() throws Exception {
-    Path parent = new Path("/");
+    Path parent = Path.ROOT;
     JSONObject obj = new JSONObject();
 
     for (int i = 0; i < 3; i++) {
       datastore.create(parent, obj, User.TEST_USER);
     }
 
-    Path [] paths = new Path[]{new Path("/__1__"),
-                               new Path("/__2__"),
-                               new Path("/__3__")};
+    Path [] paths = new Path[]{Path.fromString("/__1__"),
+                               Path.fromString("/__2__"),
+                               Path.fromString("/__3__")};
     datastore.delete(User.TEST_USER, paths);
   }
 
   public void testList() throws Exception {
-    Path parent = new Path("/");
+    Path parent = Path.ROOT;
     JSONObject obj = new JSONObject();
 
     for (int i = 0; i < 3; i++) {
@@ -135,7 +137,7 @@ public class DatastoreTest extends TestCase {
     }
 
     // Create /__3__/__4__
-    datastore.create(new Path("/__3__"), obj, User.TEST_USER);
+    datastore.create(Path.fromString("/__3__"), obj, User.TEST_USER);
 
     JSONObject list = datastore.list(parent, 0, 10, null, null, null, -1,
                                      User.TEST_USER);
@@ -149,7 +151,7 @@ public class DatastoreTest extends TestCase {
     } catch (org.json.JSONException e) {
       // OK
     }
-    list = datastore.list(new Path("/__3__/"), 0, 10, null, null, null, -1,
+    list = datastore.list(Path.fromString("/__3__/"), 0, 10, null, null, null, -1,
                           User.TEST_USER);
     assertNotNull(list.get("__4__"));
   }

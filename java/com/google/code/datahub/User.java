@@ -30,16 +30,28 @@ public class User {
 
   public static final User TEST_USER = new User();
 
+  public static final String ANONYMOUS_UID = "Anonymous";
+
   public boolean isSignedIn;
   // TODO(pmy): allow role change?
   public final boolean isAdmin;
   public final String id, name;
+  // TODO(pmy): ugh, horribly broken.
+  final boolean isPointer;
   String channel = null;
 
-  public User() {
+  private User() {
     isSignedIn = false;
     isAdmin = false;
     id = name = "TEST_USER(anonymous)";
+    isPointer = false;
+  }
+
+  // TODO(pmy): ugh, horribly broken.
+  User(String email) {
+    this.id = name = email;
+    isPointer = true;
+    isAdmin = false;
   }
 
   public User(final HttpServletRequest req) {
@@ -47,6 +59,7 @@ public class User {
     com.google.appengine.api.users.User user = service.getCurrentUser();
     isSignedIn = user != null;
     isAdmin = isSignedIn && service.isUserAdmin();
+    isPointer = false;
     if (isSignedIn) {
       id = user.getUserId() == null ? user.getEmail() : user.getUserId();
       name = user.getNickname();
@@ -59,6 +72,14 @@ public class User {
         id = ses.getId();
       }
       name = "Anonymous at " + req.getRemoteHost();
+    }
+  }
+
+  public String getEffectiveUID() {
+    if (isSignedIn || isPointer) {
+      return name;
+    } else {
+      return ANONYMOUS_UID;
     }
   }
 

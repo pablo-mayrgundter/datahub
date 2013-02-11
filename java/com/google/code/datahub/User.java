@@ -71,7 +71,7 @@ public class User {
       } else {
         id = ses.getId();
       }
-      name = "Anonymous at " + req.getRemoteHost();
+      name = "Anonymous";
     }
   }
 

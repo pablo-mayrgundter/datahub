@@ -1,13 +1,13 @@
 'use strict';
 
-var root = 'data';
+var ROOT = 'data';
 
 function FileCtrl($scope, $location, $http) {
   $scope.loc = $location;
   // TODO(pmy): This is currently the root for the servlet config.
   // Need to do something cleaner here.
   if ($scope.loc.path() == '') {
-    $scope.loc.path('/data');
+    $scope.loc.path('/' + ROOT);
   }
   $scope.pathParts = [];
   $scope.content = {};

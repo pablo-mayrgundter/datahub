@@ -99,6 +99,18 @@ public final class Util {
     return obj;
   }
 
+  public static JSONObject jsonPut(JSONObject obj, String fieldName, boolean val) {
+    if (fieldName == null) {
+      throw new NullPointerException("JSONObject doesn't allow null keys.");
+    }
+    try {
+      obj.put(fieldName, val);
+    } catch (JSONException e) {
+      throw new Error("JSON library is not behaving as expected.", e);
+    }
+    return obj;
+  }
+
   /**
    * Wrapper to convert JSONObject.get call to return null instead of
    * throw exception on missing value.

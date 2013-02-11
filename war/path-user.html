@@ -1,0 +1,10 @@
+<div ng-controller="UserCtrl" class="btn-group">
+  <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+    {{user.name}} <i class="icon-user"></i>
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu">
+    <li><a href="{{user.loginUrl}}">Login</a></li>
+    <li><a href="{{user.logoutUrl}}">Logout</a></li>
+  </ul>
+</div>

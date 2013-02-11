@@ -6,11 +6,13 @@
     <script type="text/javascript" src="/js/angular-resource-1.0.2-fix.js"></script>
     <script type="text/javascript" src="/js/bootstrap.js"></script>
     <script type="text/javascript" src="/js/FileCtrl.js"></script>
+    <script type="text/javascript" src="/js/UserCtrl.js"></script>
     <link rel="stylesheet" href="/css/bootstrap.css"/>
     <link rel="stylesheet" href="/css/index.css"/>
   </head>
   <body ng-controller="FileCtrl">
-    <div ng-include src="'path-breadcrumb.html'"></div>
+    <div ng-include src="'path-user.html'" class="pull-right"></div>
+    <div ng-include src="'path-breadcrumb.html'" style="clear: both; padding-top: 1em"></div>
     <hr/>
     <h2>Current Object</h2>
     <div ng-include src="'path-edit.html'"></div>

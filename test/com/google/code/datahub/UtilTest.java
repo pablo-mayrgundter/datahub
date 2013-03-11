@@ -14,8 +14,6 @@
  */
 package com.google.code.datahub;
 
-import junit.framework.TestCase;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,9 +23,9 @@ import java.util.Map;
 /**
  * Tests for Util.
  *
- * @author Pablo Mayrgundter
+ * @author Pablo Mayrgundter <pmy@google.com>
  */
-public class UtilTest extends TestCase {
+public class UtilTest extends BaseTest {
 
   final String kind = "foo";
   final String pathStr = "/" + kind + "/bar";
@@ -35,6 +33,7 @@ public class UtilTest extends TestCase {
   JSONObject json = null;
 
   public void setUp() {
+    super.setUp();
     path = Path.fromString(pathStr);
     json = new JSONObject();
     try {
@@ -48,6 +47,7 @@ public class UtilTest extends TestCase {
   public void tearDown() {
     path = null;
     json = null;
+    super.tearDown();
   }
 
   public void testVisitJson() throws Exception {

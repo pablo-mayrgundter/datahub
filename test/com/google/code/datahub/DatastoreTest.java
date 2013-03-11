@@ -14,14 +14,8 @@
  */
 package com.google.code.datahub;
 
-import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
-import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
-import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import junit.framework.TestCase;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -31,30 +25,19 @@ import java.io.StringWriter;
 /**
  * Tests for Datastore.
  *
- * @author Pablo Mayrgundter
+ * @author Pablo Mayrgundter <pmy@google.com>
  */
-public class DatastoreTest extends TestCase {
-
-  LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig(),
-                                 new LocalUserServiceTestConfig())
-      .setEnvAppId("app")
-      .setEnvAuthDomain("example.com")
-      .setEnvIsAdmin(true)
-      .setEnvIsLoggedIn(true)
-      .setEnvEmail("test@example.com");
+public class DatastoreTest extends BaseTest {
 
   Datastore datastore;
 
-  public void setUp() throws Exception {
+  public void setUp() {
     super.setUp();
-    helper.setUp();
     datastore = new Datastore();
   }
   
-  public void tearDown() throws Exception {
+  public void tearDown() {
     datastore = null;
-    helper.tearDown();
     super.tearDown();
   }
 

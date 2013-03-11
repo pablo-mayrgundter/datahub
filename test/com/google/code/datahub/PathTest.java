@@ -19,17 +19,12 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 
-import junit.framework.TestCase;
-
 /**
  * Tests for the Path class.
  *
- * @author Pablo Mayrgundter
+ * @author Pablo Mayrgundter <pmy@google.com>
  */
-public class PathTest extends TestCase {
-
-  LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+public class PathTest extends BaseTest {
 
   /**
    * {path, docId} or {path, docId, normalizedPath}. normalized path
@@ -48,16 +43,6 @@ public class PathTest extends TestCase {
     {"/a_/foo","ROOTa_U_P2Ffoo", "/a_/foo"},
     {"/_U/U__U_P__D/", "ROOT_UU_P2FU_U_UU_UP_U_UD", "/_U/U__U_P__D"},
   };
-
-  public void setUp() throws Exception {
-    super.setUp();
-    helper.setUp();
-  }
-
-  public void tearDown() throws Exception {
-    helper.tearDown();
-    super.tearDown();
-  }
 
   public void testResolvePart() {
     String kind = "kind";

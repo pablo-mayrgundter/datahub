@@ -14,31 +14,39 @@
  */
 package com.google.code.datahub;
 
+import org.json.JSONObject;
+
 /**
- * Tests for SecureDatastore.
+ * Tests for SecureDatastore, to exercise ACL controls for allow,
+ * restrict and combinations with different precedence.
  *
- * @author Pablo Mayrgundter
+ * @author Pablo Mayrgundter <pmy@google.com>
  */
 public class SecureDatastoreTest extends DatastoreTest {
 
-  SecureDatastore secureStore;
+  SecureDatastore store;
 
-  public void setUp() throws Exception {
+  public void setUp() {
     super.setUp();
-    secureStore = (SecureDatastore) datastore;
+    store = new SecureDatastore();
+  }
+  
+  public void tearDown() {
+    store = null;
+    super.tearDown();
   }
 
-  public void testAssertNotRestricted() {
-    secureStore.assertNotRestricted(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
-    datastore.retrieve(Path.ROOT, User.TEST_USER);
+  public void testAssertAllowed() {
+    store.assertAllowed(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
+    store.retrieve(Path.ROOT, User.TEST_USER);
   }
 
   public void testSetRestricted() {
-    testAssertNotRestricted();
-    secureStore.setRestricted(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
+    testAssertAllowed();
+    store.setRestricted(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
     try {
-      datastore.retrieve(Path.ROOT, User.TEST_USER);
-      fail("Read restricted but allowed.");
+      store.retrieve(Path.ROOT, User.TEST_USER);
+      fail("Read allowed but should be restricted.");
     } catch (SecureDatastore.OperationRestrictedException e) {
       // OK.
     }
@@ -46,8 +54,40 @@ public class SecureDatastoreTest extends DatastoreTest {
 
   public void testClearRestricted() {
     testSetRestricted();
-    secureStore.clearRestricted(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
-    secureStore.assertNotRestricted(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
-    datastore.retrieve(Path.ROOT, User.TEST_USER);
+    store.clearRestricted(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
+    store.assertAllowed(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
+    store.retrieve(Path.ROOT, User.TEST_USER);
+  }
+
+  public void testParentControlsChild() {
+
+    JSONObject o = new JSONObject();
+    User u = User.TEST_USER;
+
+    Path a = store.create(Path.ROOT, "a", o, u);
+    Path b = store.create(a, "b", o, u);
+    Path c = store.create(b, "c", o, u);
+    store.setRestricted(Path.ROOT, User.TEST_USER, SecureDatastore.Op.READ);
+    store.setAllowed(c, User.TEST_USER, SecureDatastore.Op.READ);
+
+    try {
+      store.retrieve(a, User.TEST_USER);
+      fail("Read allowed but should be restricted.");
+    } catch (SecureDatastore.OperationRestrictedException e) {
+      // OK.
+    }
+
+    try {
+      store.retrieve(b, User.TEST_USER);
+      fail("Read allowed but should be restricted.");
+    } catch (SecureDatastore.OperationRestrictedException e) {
+      // OK.
+    }
+
+    try {
+      store.retrieve(c, User.TEST_USER);
+    } catch (SecureDatastore.OperationRestrictedException e) {
+      fail("Read restricted but should be allowed.");
+    }
   }
 }

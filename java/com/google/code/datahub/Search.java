@@ -502,7 +502,7 @@ public class Search extends AbstractStore {
     String toks = "";
     do {
       toks += " " + path.toDocId();
-    } while ((path = path.getParent()) != null);
+    } while ((path = path.getParent()) != Path.ROOT);
     return toks.trim();
   }
 

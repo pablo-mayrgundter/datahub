@@ -14,12 +14,6 @@
  */
 package com.google.code.datahub;
 
-import com.google.appengine.tools.development.testing.LocalChannelServiceTestConfig;
-import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
-import com.google.appengine.tools.development.testing.LocalSearchServiceTestConfig;
-import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
-import com.google.appengine.tools.development.testing.LocalUserServiceTestConfig;
-
 import static org.mockito.Mockito.*;
 
 import org.json.JSONObject;
@@ -39,18 +33,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author Pablo Mayrgundter
  */
-public class ResourceTest extends UtilTest {
-
-  LocalServiceTestHelper helper =
-      new LocalServiceTestHelper(new LocalChannelServiceTestConfig(),
-                                 new LocalDatastoreServiceTestConfig(),
-                                 new LocalSearchServiceTestConfig(),
-                                 new LocalUserServiceTestConfig())
-      .setEnvAppId("app")
-      .setEnvAuthDomain("example.com")
-      .setEnvIsAdmin(true)
-      .setEnvIsLoggedIn(true)
-      .setEnvEmail("test@example.com");
+public class ResourceTest extends BaseTest {
 
   static final String BODY_KEY = "body";
   static final String BODY_VAL = "ecosystem οικοσύστημα पारिस्थितिकी तंत्र";
@@ -66,7 +49,6 @@ public class ResourceTest extends UtilTest {
 
   public void setUp() {
     super.setUp();
-    helper.setUp();
     servletConfig = mock(ServletConfig.class);
     req = mock(HttpServletRequest.class);
     rsp = mock(HttpServletResponse.class);
@@ -81,7 +63,6 @@ public class ResourceTest extends UtilTest {
   }
 
   public void tearDown() {
-    helper.tearDown();
     super.tearDown();
   }
 

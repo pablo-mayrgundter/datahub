@@ -316,18 +316,38 @@ public class Resource extends AbstractServlet {
       }
       // __acl__ requests are on the parent.
       reqPath = reqPath.getParent();
-      final String reqRestrictUser = param("user");
-      final String reqRestrictOp = param("op");
-      final String reqRestrictClear = paramAllowNull("clear");
+      final String reqAclCtrl = param("ctrl");
+      final String reqAclUser = param("user");
+      final String reqAclOp = param("op");
+      final String reqAclClear = paramAllowNull("clear");
 
-      final User restrictUser = new User(reqRestrictUser);
-      final boolean restrictClear = reqRestrictClear != null;
-      if (restrictClear) {
-        store.datastoreAsAclService.clearRestricted(reqPath, restrictUser,
-                                                    Store.Op.valueOf(reqRestrictOp.toUpperCase()));
+      if (!paramsOk("Must specify ctrl, user and op; clear is an optional boolean", rsp)) {
+        return;
+      }
+      if (!reqAclCtrl.equals("allow") || !reqAclCtrl.equals("restrict")) {
+        badRequest("ctrl must be either allow or restrict.", rsp);
+        return;
+      }
+
+      final User ctrlUser = new User(reqAclUser);
+      final boolean ctrlClear = reqAclClear != null;
+
+      if (reqAclCtrl.equals("allow")) {
+        if (ctrlClear) {
+          store.datastoreAsAclService.clearAllowed(reqPath, ctrlUser,
+                                                   Store.Op.valueOf(reqAclOp.toUpperCase()));
+        } else {
+          store.datastoreAsAclService.setAllowed(reqPath, ctrlUser,
+                                                 Store.Op.valueOf(reqAclOp.toUpperCase()));
+        }
       } else {
-        store.datastoreAsAclService.setRestricted(reqPath, restrictUser,
-                                                  Store.Op.valueOf(reqRestrictOp.toUpperCase()));
+        if (ctrlClear) {
+          store.datastoreAsAclService.clearRestricted(reqPath, ctrlUser,
+                                                      Store.Op.valueOf(reqAclOp.toUpperCase()));
+        } else {
+          store.datastoreAsAclService.setRestricted(reqPath, ctrlUser,
+                                                    Store.Op.valueOf(reqAclOp.toUpperCase()));
+        }
       }
       return;
     }

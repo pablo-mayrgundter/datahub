@@ -86,6 +86,10 @@ public class Path {
     return s;
   }
 
+  public int getLength() {
+    return path.length;
+  }
+
   /**
    * @return a List of the paths on the way from the root to this
    * path.
@@ -255,7 +259,7 @@ public class Path {
    */
   static Key resolvePart(String part, Key parent) {
     if (parent == null) {
-      parent = ROOT_KEY;
+      throw new NullPointerException("Given null parent, use ROOT singleton instead.");
     }
     Matcher m = PART_PATTERN.matcher(part);
     if (!m.find()) {

@@ -106,7 +106,7 @@ public class CompositeStore extends AbstractStore {
 
   @Override
   public JSONObject retrieveQueries(User user, Path path, int limit, long expiresBefore) {
-    datastoreAsAclService.assertNotRestricted(path, user, Datastore.Op.READ);
+    datastoreAsAclService.assertAllowed(path, user, Datastore.Op.READ);
     return search.retrieveQueries(user, path, limit, expiresBefore);
   }
 
@@ -115,7 +115,7 @@ public class CompositeStore extends AbstractStore {
                            int offset, int limit, String [] fields, int [] order,
                            String endpointId, long duration,
                            User user) {
-    datastoreAsAclService.assertNotRestricted(path, user, Datastore.Op.READ);
+    datastoreAsAclService.assertAllowed(path, user, Datastore.Op.READ);
     return search.search(path, query, offset, limit, fields, order, endpointId, duration, user);
   }
 

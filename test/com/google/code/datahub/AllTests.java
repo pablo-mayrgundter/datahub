@@ -20,7 +20,7 @@ import junit.framework.TestSuite;
  * This is a convenient target for the build system to invoke all of
  * the unit tests.
  *
- * @author Pablo Mayrgundter
+ * @author Pablo Mayrgundter <pmy@google.com>
  */
 public class AllTests {
 

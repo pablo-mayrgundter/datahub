@@ -13,7 +13,7 @@
     url-pattern mapping below. -->
     <init-param>
       <param-name>path</param-name>
-      <param-value>/data</param-value>
+      <param-value>/</param-value>
     </init-param>
   </servlet>
   <servlet-mapping>

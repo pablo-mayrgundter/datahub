@@ -173,6 +173,8 @@ public class Search extends AbstractStore {
    * references a Search object that has not yet been constructed.
    */
   public Search(Path corpusPath, Path parentCorpusPath) {
+    logger.info(String.format("Creating search endpoint for corpusPath(%s), parentCorpusPath(%s)",
+                              corpusPath, parentCorpusPath));
     this.corpusPath = corpusPath;
     Search parent = CORPORA_BY_NAME.get(parentCorpusPath);
     if (parentCorpusPath != null && parent == null) {

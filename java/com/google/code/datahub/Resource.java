@@ -292,7 +292,7 @@ public class Resource extends AbstractServlet {
     if (reqJson == null) {
       return;
     }
-
+    logger.info(String.format("doPost: reqPath(%s)", reqPath));
     Path path = store.create(reqPath, reqJson, reqUser);
     rsp.setHeader("Location", req.getServletPath() + path.toString());
   }
@@ -321,10 +321,11 @@ public class Resource extends AbstractServlet {
       final String reqAclOp = param("op");
       final String reqAclClear = paramAllowNull("clear");
 
+      System.err.printf("ctrl(%s), user(%s), op(%s)\n", reqAclCtrl, reqAclUser, reqAclOp);
       if (!paramsOk("Must specify ctrl, user and op; clear is an optional boolean", rsp)) {
         return;
       }
-      if (!reqAclCtrl.equals("allow") || !reqAclCtrl.equals("restrict")) {
+      if (!reqAclCtrl.equals("allow") && !reqAclCtrl.equals("restrict")) {
         badRequest("ctrl must be either allow or restrict.", rsp);
         return;
       }

@@ -101,6 +101,7 @@ public class AbstractServlet extends HttpServlet {
    * </pre>
    */
   protected boolean paramsOk(String msg, HttpServletResponse rsp) throws IOException {
+    System.out.printf("last: paramsOk(%s)\n", paramsOk);
     if (paramsOk) {
       return true;
     }
@@ -118,10 +119,12 @@ public class AbstractServlet extends HttpServlet {
       val = paramAllowNull(name);
     } catch (NullPointerException e) {
       // TODO(pmy): fix this terrible bug.
-      System.err.println(e);
+      System.err.println("FIXME! " + e);
       return "";
     }
+    System.out.printf("before: paramsOk(%s)\n", paramsOk);
     paramsOk &= val != null;
+    System.out.printf("after: paramsOk(%s)\n\n", paramsOk);
     if (val == null) {
       return val;
     }
@@ -158,7 +161,6 @@ public class AbstractServlet extends HttpServlet {
    * @return the value of the request parameter with the given name.
    */
   protected String paramAllowNull(String name) {
-    paramsOk &= req.getParameterMap().containsKey(name);
     return req.getParameter(name);
   }
 

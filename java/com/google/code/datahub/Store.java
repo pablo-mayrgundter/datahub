@@ -35,6 +35,7 @@ public interface Store {
    * for the requesting user.
    */
   public static class OperationRestrictedException extends SecurityException {
+    static final long serialVersionUID = 468565334854286366L;
     OperationRestrictedException(Path path, User user, Op op) {
       super(String.format("path(%s) restricts user(%s) operation(%s)", path, user, op));
     }
@@ -44,6 +45,7 @@ public interface Store {
    * Thrown when a specified resource doesn't exist in the store.
    */
   public static class NotFoundException extends RuntimeException {
+    static final long serialVersionUID = 9133729704290286266L;
     NotFoundException(Path path) {
       super(path.toString());
     }

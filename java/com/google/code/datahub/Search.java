@@ -24,7 +24,7 @@ import com.google.appengine.api.search.Document;
 import com.google.appengine.api.search.Field;
 import com.google.appengine.api.search.Index;
 import com.google.appengine.api.search.IndexSpec;
-import com.google.appengine.api.search.ListRequest;
+import com.google.appengine.api.search.GetRequest;
 import com.google.appengine.api.search.Query;
 import com.google.appengine.api.search.QueryOptions;
 import com.google.appengine.api.search.Results;
@@ -216,7 +216,7 @@ public class Search extends AbstractStore {
     }
     try {
       create(path, jsonToDocument(path, obj), Datastore.jsonToEntity(path, obj));
-    } catch (com.google.appengine.api.search.AddException e) {
+    } catch (com.google.appengine.api.search.PutException e) {
       throw new ServiceException(e);
     }
     return path;
@@ -228,7 +228,7 @@ public class Search extends AbstractStore {
     for (int i = 0; i < paths.length; i++) {
       docIds[i] = paths[i].toDocId();
     }
-    docIndex.remove(docIds);
+    docIndex.delete(docIds);
     if (parent != null) {
       parent.delete(user, paths);
     }
@@ -253,13 +253,13 @@ public class Search extends AbstractStore {
 
     Iterator<String> allDocIdsItr = new Tasks.IteratorChain<String>() {
       Iterator<String> partialIterator() {
-        ListRequest.Builder listReq = ListRequest.newBuilder().setReturningIdsOnly(true);
+        GetRequest.Builder listReq = GetRequest.newBuilder().setReturningIdsOnly(true);
         if (this.lastIterated != null) {
           listReq.setStartId(this.lastIterated).setIncludeStart(false);
         }
         Iterator<Document> docItr;
         try {
-          docItr = docIndex.listDocuments(listReq.build()).getResults().iterator();
+          docItr = docIndex.getRange(listReq.build()).getResults().iterator();
         } catch (IllegalArgumentException e) {
           // This happens if there are not any documents indexed.
           return new java.util.ArrayList<String>().iterator();
@@ -274,7 +274,7 @@ public class Search extends AbstractStore {
 
     Tasks.Processor deletor = new Tasks.Processor("deleteIndex") {
         void process(String [] docIds) {
-          docIndex.remove(docIds);
+          docIndex.delete(docIds);
         }
       };
 
@@ -318,9 +318,8 @@ public class Search extends AbstractStore {
 
   @Override
   public JSONObject retrieve(Path path, User user) {
-    List<Document> listOfOneDoc = docIndex.listDocuments(
-        ListRequest.newBuilder().setLimit(1).setStartId(path.toDocId()).build()).getResults();
-    return listOfOneDoc.size() == 0 ? null : documentToJson(listOfOneDoc.get(0));
+    Document doc = docIndex.get(path.toDocId());
+    return doc == null ? null : documentToJson(doc);
   }
 
   /** TODO(pmy): fields and order currently ignored. */
@@ -408,7 +407,7 @@ public class Search extends AbstractStore {
     debug("create: path(%s), objAsDoc(%s), objAsEnt(%s), corpusPath(%s)",
           path, objAsDoc, objAsEnt, corpusPath);
 
-    docIndex.add(objAsDoc);
+    docIndex.put(objAsDoc);
 
     // Update schema at this path to include the fields of the given
     // doc.

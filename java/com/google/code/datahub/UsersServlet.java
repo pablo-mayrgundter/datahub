@@ -31,6 +31,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class UsersServlet extends Resource {
 
+  static final long serialVersionUID = -6927719971633391020L;
+
   public UsersServlet() {}
 
   @Override

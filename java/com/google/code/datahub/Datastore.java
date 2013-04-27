@@ -246,7 +246,16 @@ public class Datastore extends AbstractStore {
   /** Recursive callee of setProperties(Entity, JSONObject). */
   static PropertyContainer setProperties(final PropertyContainer entity, JSONObject json) {
     Util.visitJson(json, new Util.Visitor() {
-        void visit(String key, Object val) { entity.setProperty(key, val); }
+        void visit(String key, Object val) {
+          // Datastore will complain about storing JSONObject.NULL, so
+          // explicitly convert to java NULL.  JSONObject will convert
+          // back to json's null type on the way back out.
+          if (val == JSONObject.NULL) {
+            entity.setProperty(key, null);
+          } else {
+            entity.setProperty(key, val);
+          }
+        }
         void visit(String key, Boolean val) { entity.setProperty(key, val); }
         void visit(String key, Double val) { entity.setProperty(key, val); }
         void visit(String key, Integer val) { entity.setProperty(key, val); }

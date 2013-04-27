@@ -72,6 +72,19 @@ public class DatastoreTest extends BaseTest {
                  datastore.create(parent, "bar", obj, User.TEST_USER));
   }
 
+  public void testJSONConversion() throws Exception {
+    JSONObject obj = new JSONObject();
+    obj.put("foo", "bar");
+    obj.put("null", JSONObject.NULL);
+
+    Path path = datastore.create(Path.ROOT, "item", obj, User.TEST_USER);
+    assertEquals(Path.fromString("/item"), path);
+
+    obj = datastore.retrieve(path, User.TEST_USER);
+    assertEquals("bar", obj.get("foo"));
+    assertEquals(JSONObject.NULL, obj.get("null"));
+  }
+
   public void testDelete() throws Exception {
     Path parent = Path.ROOT;
     JSONObject obj = new JSONObject();

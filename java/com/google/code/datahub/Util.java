@@ -49,9 +49,10 @@ public final class Util {
    * json object.
    */
   public static void visitJson(JSONObject obj, Visitor visitor) {
-    java.util.Iterator itr = obj.keys();
+    @SuppressWarnings("unchecked")
+    java.util.Iterator<String> itr = obj.keys();
     while (itr.hasNext()) {
-      String key = (String) itr.next();
+      String key = itr.next();
       Object val;
       try {
         val = obj.get(key);

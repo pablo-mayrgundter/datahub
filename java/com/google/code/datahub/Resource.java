@@ -235,10 +235,8 @@ public class Resource extends AbstractServlet {
         // to internal subscriptions from its API.  TODO(pmy): A
         // better way to do this would be to provide the
         // administrative interface expicitly there.
-
-        ((Search) store.search)
-            .queryIndex.pss.unsubscribe(req.getParameter("topic"),
-                                        req.getParameter("queryId"));
+        Search.ProspectiveSearchIndex.pss.unsubscribe(req.getParameter("topic"),
+                                                      req.getParameter("queryId"));
         httpOk("Queries deleted", rsp);
         return;
       }

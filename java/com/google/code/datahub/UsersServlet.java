@@ -48,8 +48,8 @@ public class UsersServlet extends Resource {
     JSONObject rspJson = new JSONObject();
     Util.jsonPut(rspJson, "signedIn", reqUser.signedIn());
     Util.jsonPut(rspJson, "name", reqUser.name);
-    Util.jsonPut(rspJson, "loginUrl", reqUser.createLoginURL(continueUrl));
-    Util.jsonPut(rspJson, "logoutUrl", reqUser.createLogoutURL(continueUrl));
+    Util.jsonPut(rspJson, "loginUrl", User.createLoginURL(continueUrl));
+    Util.jsonPut(rspJson, "logoutUrl", User.createLogoutURL(continueUrl));
     httpOk(rspJson, rsp);
   }
 

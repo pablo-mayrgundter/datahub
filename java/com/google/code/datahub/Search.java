@@ -94,7 +94,7 @@ public class Search extends AbstractStore {
    */
   static class ProspectiveSearchIndex {
     static final ProspectiveSearchService pss =
-        com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory
+      com.google.appengine.api.prospectivesearch.ProspectiveSearchServiceFactory
         .getProspectiveSearchService();
 
     static List<String> listTopics() {

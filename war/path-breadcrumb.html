@@ -1,9 +1,8 @@
-<ol class="breadcrumb">
-  <li ng-repeat="link in navLinks">
-    <a ng-href="#{{link['link']}}">{{link['name']}}</a> <span class="divider">/</span>
-  </li>
-</ol>
-<!--<hr>
-    path: {{loc.path()}}<br/>
-    pathParts: {{pathParts}}<br/>
-    subdirs: {{subdirs}}-->
+<div>
+  <ol class="breadcrumb">
+    <li><a href="#/data"><i class="icon-folder-open"></i></a></li>
+    <li ng-repeat="link in navLinks" style="margin-bottom: -3px">
+      <span class="divider">/</span><a ng-href="#{{link['link']}}">{{link['name']}}</a>
+    </li>
+  </ol>
+</div>

@@ -5,3 +5,7 @@ body {
 th {
   color: grey;
 }
+
+textarea[readonly] {
+  display: none;
+}

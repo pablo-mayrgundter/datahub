@@ -6,7 +6,6 @@ function UserCtrl($scope, $location, $http) {
   // understand angular hash path handling yet.
   $http.get('/user', {params: {'continueUrl': '/#' + $location.path()}})
     .success(function(rsp) {
-      console.log(rsp);
       $scope.user = rsp;
     });
 }

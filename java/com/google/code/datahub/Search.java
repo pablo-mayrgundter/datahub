@@ -391,11 +391,6 @@ public class Search extends AbstractStore {
     return rspJson;
   }
 
-  @Override
-  public void update(Path path, final JSONObject objUpdates, User user) {
-    throw new UnsupportedOperationException();
-  }
-
   // Helpers
 
   /**
@@ -504,6 +499,8 @@ public class Search extends AbstractStore {
     do {
       toks += " " + path.toDocId();
     } while ((path = path.getParent()) != Path.ROOT);
+    toks = toks + " " + Path.ROOT.toDocId();
+    System.err.printf("!!!! makePathTokens %s\n", toks);
     return toks.trim();
   }
 

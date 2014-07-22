@@ -1,8 +1,17 @@
-<div id="createButton">
-  <div class="input-prepend">
+<div>
+  <button id="editBtn" ng-click="toggleEdit()" class="btn btn-primary">
+    <i class="icon-pencil"></i> Edit
+  </button>
+  <button id="saveBtn" ng-click="save(fileName)" class="btn btn-primary" style="display: none">
+    <i class="icon-ok-sign"></i> Save
+  </button>
+  <hr/>
+<!-- TODO(pmy): re-enable rename -->
+<!--  <div class="input-prepend">
     <span class="add-on">Name:</span>
     <input ng-model="fileName" class="span2" type="text"><br/>
   </div>
-  <textarea id="fileObject" rows="5" cols="20">{{content}}</textarea><br/>
-  <button ng-click="save(fileName)" class="btn btn-primary">Save</button>
+-->
+  <div id="objHtml"></div>
+  <textarea id="fileObject" rows="5" cols="20" readonly>{{content}}</textarea><br/>
 </div>

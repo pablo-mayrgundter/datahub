@@ -1,24 +1,35 @@
 <!doctype html>
 <html ng-app lang="en">
   <head>
+    <link rel="stylesheet" href="/css/bootstrap.css"/>
+    <link rel="stylesheet" href="/css/index.css"/>
+  </head>
+  <body ng-controller="FileCtrl">
+    <div class="row">
+      <ol class="breadcrumb span" class="pull-left" style="padding: 0 5px 0 1em">
+        <li><a href="#/data"><i class="icon-folder-open" style="margin-top: 10px"></i></a></li>
+        <li ng-repeat="link in navLinks" style="position: relative; top: 10px">
+          <span class="divider">/</span><a ng-href="#{{link['link']}}">{{link['name']}}</a>
+        </li>
+        <li>
+          <div ng-include src="'path-search.html'"></div>
+        </li>
+      </ol>
+      <div ng-include src="'path-user.html'" class="span pull-right"></div>
+    </div>
+    <hr class="row">
+    <div class="row">
+      <div ng-show="!isEmpty(searchRes)" ng-include src="'path-results.html'"></div>
+      <div ng-show="isEmpty(searchRes)" ng-include src="'path-edit.html'"></div>
+    </div>
     <script type="text/javascript" src="/js/jquery.js"></script>
     <script type="text/javascript" src="/js/angular-1.0.2.js"></script>
     <script type="text/javascript" src="/js/angular-resource-1.0.2-fix.js"></script>
     <script type="text/javascript" src="/js/bootstrap.js"></script>
     <script type="text/javascript" src="/js/FileCtrl.js"></script>
     <script type="text/javascript" src="/js/UserCtrl.js"></script>
-    <link rel="stylesheet" href="/css/bootstrap.css"/>
-    <link rel="stylesheet" href="/css/index.css"/>
-  </head>
-  <body ng-controller="FileCtrl">
-    <div ng-include src="'path-user.html'" class="pull-right"></div>
-    <div ng-include src="'path-breadcrumb.html'" style="clear: both; padding-top: 1em"></div>
-    <div ng-include src="'path-children.html'"></div>
-    <hr/>
-    <h2>Current Object</h2>
-    <div ng-include src="'path-edit.html'"></div>
-    <hr/>
-    <h2>Add</h2>
-    <div ng-include src="'path-add.html'"></div>
+    <script type="text/javascript" src="/js/obj2html.js"></script>
+    <script type="text/javascript" src="/js/collapsor.js"></script>
+    <script type="text/javascript" src="/js/index.js"></script>
   </body>
 </html>

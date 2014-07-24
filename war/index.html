@@ -1,8 +1,18 @@
 <!doctype html>
-<html ng-app lang="en">
+<html ng-app="datahub" lang="en">
   <head>
     <link rel="stylesheet" href="/css/bootstrap.css"/>
     <link rel="stylesheet" href="/css/index.css"/>
+    <script type="text/javascript" src="/js/jquery.js"></script>
+    <script type="text/javascript" src="/js/angular-1.3.0-beta.16.js"></script>
+    <script type="text/javascript" src="/js/angular-resource-1.3.0-beta.16.js"></script>
+    <script type="text/javascript" src="/js/angular-route-1.3.0-beta.16.js"></script>
+    <script type="text/javascript" src="/js/bootstrap.js"></script>
+    <script type="text/javascript" src="/js/index.js"></script>
+    <script type="text/javascript" src="/js/FileCtrl.js"></script>
+    <script type="text/javascript" src="/js/UserCtrl.js"></script>
+    <script type="text/javascript" src="/js/obj2html.js"></script>
+    <script type="text/javascript" src="/js/collapsor.js"></script>
   </head>
   <body ng-controller="FileCtrl">
     <div class="row">
@@ -22,14 +32,5 @@
       <div ng-show="!isEmpty(searchRes)" ng-include src="'path-results.html'"></div>
       <div ng-show="isEmpty(searchRes)" ng-include src="'path-edit.html'"></div>
     </div>
-    <script type="text/javascript" src="/js/jquery.js"></script>
-    <script type="text/javascript" src="/js/angular-1.0.2.js"></script>
-    <script type="text/javascript" src="/js/angular-resource-1.0.2-fix.js"></script>
-    <script type="text/javascript" src="/js/bootstrap.js"></script>
-    <script type="text/javascript" src="/js/FileCtrl.js"></script>
-    <script type="text/javascript" src="/js/UserCtrl.js"></script>
-    <script type="text/javascript" src="/js/obj2html.js"></script>
-    <script type="text/javascript" src="/js/collapsor.js"></script>
-    <script type="text/javascript" src="/js/index.js"></script>
   </body>
 </html>

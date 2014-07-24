@@ -1,8 +1,8 @@
 <div>
-  <button id="editBtn" ng-click="toggleEdit()" class="btn btn-primary">
+  <button ng-click="toggleEdit()" ng-show="!editing" class="btn btn-primary">
     <i class="icon-pencil"></i> Edit
   </button>
-  <button id="saveBtn" ng-click="save(fileName)" class="btn btn-primary" style="display: none">
+  <button ng-click="save(fileName)" ng-show="editing" class="btn btn-primary">
     <i class="icon-ok-sign"></i> Save
   </button>
   <hr/>
@@ -12,6 +12,9 @@
     <input ng-model="fileName" class="span2" type="text"><br/>
   </div>
 -->
-  <div id="objHtml"></div>
-  <textarea id="fileObject" rows="5" cols="20" readonly>{{content}}</textarea><br/>
+  <div id="objHtml" ng-show="!editing"></div>
+  <textarea id="fileObject"
+            ng-show="editing"
+            rows="5"
+            cols="20">{{content}}</textarea>
 </div>
